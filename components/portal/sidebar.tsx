@@ -4,18 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, Users, DollarSign, FileText, Activity, LogOut, Settings, ChevronDown, ChevronRight, UserPlus, Building2, GraduationCap, Calendar, ArrowRightLeft } from 'lucide-react';
+import { Home, Users, DollarSign, FileText, Activity, LogOut, Settings, ChevronDown, ChevronRight, UserPlus, Building2, GraduationCap, Calendar, ArrowRightLeft, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [openMenus, setOpenMenus] = useState<string[]>(['manage']);
+  const [openMenus, setOpenMenus] = useState<string[]>([]);
 
   const toggleMenu = (menuId: string) => {
     setOpenMenus(prev =>
       prev.includes(menuId)
         ? prev.filter(id => id !== menuId)
-        : [menuId] // Only keep the clicked menu open, close others
+        : [...prev, menuId] // Keep multiple menus open
     );
   };
 
@@ -51,42 +51,103 @@ export function Sidebar() {
           </Button>
         </Link>
 
-        {/* Manage - Collapsible */}
+        {/* Students - Collapsible */}
         <div className="overflow-hidden">
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 cursor-pointer"
-            onClick={() => toggleMenu('manage')}
+            onClick={() => toggleMenu('students')}
           >
-            <Users className="h-5 w-5" />
-            Manage
-            <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${openMenus.includes('manage') ? 'rotate-0' : '-rotate-90'}`} />
+            <GraduationCap className="h-5 w-5" />
+            Students
+            <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${openMenus.includes('students') ? 'rotate-0' : '-rotate-90'}`} />
           </Button>
           <div
             className={`ml-4 space-y-1 transition-all duration-300 ease-in-out ${
-              openMenus.includes('manage')
-                ? 'max-h-40 opacity-100 mt-1'
+              openMenus.includes('students')
+                ? 'max-h-60 opacity-100 mt-1'
                 : 'max-h-0 opacity-0 mt-0'
             }`}
           >
             <Link href="/admin/students" className="cursor-pointer">
               <Button
-                variant={isActive('/admin/students') ? 'default' : 'ghost'}
+                variant={pathname === '/admin/students' ? 'default' : 'ghost'}
                 size="sm"
                 className="w-full justify-start gap-3 cursor-pointer"
               >
-                <GraduationCap className="h-4 w-4" />
-                Student List
+                <Users className="h-4 w-4" />
+                All Students
               </Button>
             </Link>
+            <Link href="/admin/students/add" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/students/add' ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add New
+              </Button>
+            </Link>
+            <Link href="/admin/students/categories" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/students/categories' ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <Folder className="h-4 w-4" />
+                Categories
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Institutes - Collapsible */}
+        <div className="overflow-hidden">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 cursor-pointer"
+            onClick={() => toggleMenu('institutes')}
+          >
+            <Building2 className="h-5 w-5" />
+            Institutes
+            <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${openMenus.includes('institutes') ? 'rotate-0' : '-rotate-90'}`} />
+          </Button>
+          <div
+            className={`ml-4 space-y-1 transition-all duration-300 ease-in-out ${
+              openMenus.includes('institutes')
+                ? 'max-h-60 opacity-100 mt-1'
+                : 'max-h-0 opacity-0 mt-0'
+            }`}
+          >
             <Link href="/admin/institutes" className="cursor-pointer">
               <Button
-                variant={isActive('/admin/institutes') ? 'default' : 'ghost'}
+                variant={pathname === '/admin/institutes' ? 'default' : 'ghost'}
                 size="sm"
                 className="w-full justify-start gap-3 cursor-pointer"
               >
                 <Building2 className="h-4 w-4" />
-                Institute / School
+                All Institutes
+              </Button>
+            </Link>
+            <Link href="/admin/institutes/add" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/institutes/add' ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add New
+              </Button>
+            </Link>
+            <Link href="/admin/institutes/categories" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/institutes/categories' ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <Folder className="h-4 w-4" />
+                Categories
               </Button>
             </Link>
           </div>
@@ -103,16 +164,46 @@ export function Sidebar() {
           </Button>
         </Link>
 
-        {/* Fees */}
-        <Link href="/admin/fees" className="cursor-pointer">
+        {/* Fees - Collapsible */}
+        <div className="overflow-hidden">
           <Button
-            variant={isActive('/admin/fees') ? 'default' : 'ghost'}
+            variant="ghost"
             className="w-full justify-start gap-3 cursor-pointer"
+            onClick={() => toggleMenu('fees')}
           >
             <DollarSign className="h-5 w-5" />
-            Fee Monitoring
+            Fees
+            <ChevronDown className={`h-4 w-4 ml-auto transition-transform duration-200 ${openMenus.includes('fees') ? 'rotate-0' : '-rotate-90'}`} />
           </Button>
-        </Link>
+          <div
+            className={`ml-4 space-y-1 transition-all duration-300 ease-in-out ${
+              openMenus.includes('fees')
+                ? 'max-h-40 opacity-100 mt-1'
+                : 'max-h-0 opacity-0 mt-0'
+            }`}
+          >
+            <Link href="/admin/fees" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/fees' ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <DollarSign className="h-4 w-4" />
+                Fee Monitoring
+              </Button>
+            </Link>
+            <Link href="/admin/fee-setup" className="cursor-pointer">
+              <Button
+                variant={pathname === '/admin/fee-setup' || pathname?.startsWith('/admin/fee-setup/') ? 'default' : 'ghost'}
+                size="sm"
+                className="w-full justify-start gap-3 cursor-pointer"
+              >
+                <Settings className="h-4 w-4" />
+                Fee Setup
+              </Button>
+            </Link>
+          </div>
+        </div>
 
         <div className="border-t border-gray-200 my-2"></div>
 

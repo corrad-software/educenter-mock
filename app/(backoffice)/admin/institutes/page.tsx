@@ -128,10 +128,12 @@ export default function InstitutesPage() {
                   onChange={handleSearchChange}
                 />
               </div>
-              <Button className="gap-2">
-                <Building2 className="h-4 w-4" />
-                Add Institute
-              </Button>
+              <Link href="/admin/institutes/add">
+                <Button className="gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Add Institute
+                </Button>
+              </Link>
             </div>
           </div>
         </CardHeader>
@@ -178,9 +180,11 @@ export default function InstitutesPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
+                      <Link href={`/admin/institutes/edit/${institute.id}`}>
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </Link>
                       <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
                         <Trash2 className="h-4 w-4" />
                       </Button>
