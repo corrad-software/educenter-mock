@@ -10,12 +10,20 @@ import { malaysianInstitutes } from '@/lib/mock-data/malaysian-institutes';
 import { Pagination } from '@/components/ui/pagination';
 import { Building2, Search, Pencil, Trash2, UserPlus, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { useEducationStore } from '@/lib/store/education-store';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function InstitutesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { selectedLevel } = useEducationStore();
+  const level = selectedLevel ?? 'primary';
+
+  // For MAIWP show all, otherwise filter to selected level
+  const levelInstitutes = level === 'maiwp'
+    ? malaysianInstitutes
+    : malaysianInstitutes.filter(i => i.educationLevel === level);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -28,7 +36,7 @@ export default function InstitutesPage() {
     }
   };
 
-  const filteredInstitutes = malaysianInstitutes.filter(institute =>
+  const filteredInstitutes = levelInstitutes.filter(institute =>
     institute.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     institute.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
     institute.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -36,11 +44,13 @@ export default function InstitutesPage() {
   );
 
   // Calculate statistics
-  const totalInstitutes = malaysianInstitutes.length;
-  const activeInstitutes = malaysianInstitutes.filter(i => i.status === 'active').length;
-  const totalStudentsAcrossInstitutes = malaysianInstitutes.reduce((sum, inst) => sum + inst.students, 0);
-  const averageStudentsPerInstitute = Math.round(totalStudentsAcrossInstitutes / totalInstitutes);
-  const largestInstitute = malaysianInstitutes.reduce((max, inst) => inst.students > max.students ? inst : max, malaysianInstitutes[0]);
+  const totalInstitutes = levelInstitutes.length;
+  const activeInstitutes = levelInstitutes.filter(i => i.status === 'active').length;
+  const totalStudentsAcrossInstitutes = levelInstitutes.reduce((sum, inst) => sum + inst.students, 0);
+  const averageStudentsPerInstitute = totalInstitutes > 0 ? Math.round(totalStudentsAcrossInstitutes / totalInstitutes) : 0;
+  const largestInstitute = levelInstitutes.length > 0
+    ? levelInstitutes.reduce((max, inst) => inst.students > max.students ? inst : max, levelInstitutes[0])
+    : null;
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredInstitutes.length / ITEMS_PER_PAGE);
@@ -105,8 +115,8 @@ export default function InstitutesPage() {
             <Building2 className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{largestInstitute.students}</div>
-            <p className="text-xs text-muted-foreground">{largestInstitute.code}</p>
+            <div className="text-2xl font-bold">{largestInstitute ? largestInstitute.students : 0}</div>
+            <p className="text-xs text-muted-foreground">{largestInstitute ? largestInstitute.code : '—'}</p>
           </CardContent>
         </Card>
       </div>
@@ -141,11 +151,12 @@ export default function InstitutesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Institute Code</TableHead>
+                <TableHead>Code</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead>Total Students</TableHead>
+                <TableHead>Est.</TableHead>
+                <TableHead>Students</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -156,16 +167,19 @@ export default function InstitutesPage() {
                   <TableCell className="font-medium font-mono text-sm">{institute.code}</TableCell>
                   <TableCell className="font-medium">{institute.name}</TableCell>
                   <TableCell>
+                    <Badge variant="outline" className="text-xs">{institute.type}</Badge>
+                  </TableCell>
+                  <TableCell>
                     <div>
                       <div className="font-medium">{institute.city}</div>
                       <div className="text-xs text-muted-foreground">{institute.state}</div>
                     </div>
                   </TableCell>
-                  <TableCell>{institute.capacity}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{institute.established ?? '—'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <UserPlus className="h-4 w-4 text-gray-400" />
-                      <span>{institute.students} students</span>
+                      <span>{institute.students}</span>
                     </div>
                   </TableCell>
                   <TableCell>

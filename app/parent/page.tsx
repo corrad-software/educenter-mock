@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockInvoices, mockStudents } from '@/lib/mock-data';
+import { mockInvoices, mockStudents, mockSubsidyRules } from '@/lib/mock-data';
 import { format } from 'date-fns';
-import { DollarSign, FileText, CreditCard, Bell, Calendar, User, MapPin, CheckCircle, Download, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DollarSign, FileText, CreditCard, Bell, Calendar, User, MapPin, CheckCircle, Download, Printer, ChevronLeft, ChevronRight, Award, TrendingUp, TrendingDown, Minus, Sparkles, BookOpen, AlertTriangle, Shield, PiggyBank, HandCoins, Info } from 'lucide-react';
 import Image from 'next/image';
 import type { Invoice } from '@/lib/types';
 
@@ -23,6 +23,105 @@ interface PaymentReceipt {
   paymentMethod: string;
   reference: string;
 }
+
+// Exam results sorted by year and semester (KSSR grading)
+const examResults = [
+  {
+    year: 5,
+    semester: 1,
+    examName: 'Peperiksaan Pertengahan Tahun',
+    examDate: '2024-05',
+    class: '5 Cemerlang',
+    subjects: [
+      { code: 'BM', name: 'Bahasa Melayu', mark: 82, grade: 'A' },
+      { code: 'BI', name: 'Bahasa Inggeris', mark: 71, grade: 'B+' },
+      { code: 'MT', name: 'Matematik', mark: 88, grade: 'A' },
+      { code: 'SC', name: 'Sains', mark: 79, grade: 'B+' },
+      { code: 'PI', name: 'Pendidikan Islam', mark: 91, grade: 'A+' },
+      { code: 'SE', name: 'Sejarah', mark: 74, grade: 'B+' },
+    ],
+  },
+  {
+    year: 4,
+    semester: 2,
+    examName: 'Peperiksaan Akhir Tahun',
+    examDate: '2023-11',
+    class: '4 Bestari',
+    subjects: [
+      { code: 'BM', name: 'Bahasa Melayu', mark: 78, grade: 'B+' },
+      { code: 'BI', name: 'Bahasa Inggeris', mark: 68, grade: 'B' },
+      { code: 'MT', name: 'Matematik', mark: 85, grade: 'A' },
+      { code: 'SC', name: 'Sains', mark: 76, grade: 'B+' },
+      { code: 'PI', name: 'Pendidikan Islam', mark: 88, grade: 'A' },
+      { code: 'SE', name: 'Sejarah', mark: 70, grade: 'B+' },
+    ],
+  },
+  {
+    year: 4,
+    semester: 1,
+    examName: 'Peperiksaan Pertengahan Tahun',
+    examDate: '2023-05',
+    class: '4 Bestari',
+    subjects: [
+      { code: 'BM', name: 'Bahasa Melayu', mark: 75, grade: 'B+' },
+      { code: 'BI', name: 'Bahasa Inggeris', mark: 62, grade: 'B' },
+      { code: 'MT', name: 'Matematik', mark: 80, grade: 'A' },
+      { code: 'SC', name: 'Sains', mark: 72, grade: 'B+' },
+      { code: 'PI', name: 'Pendidikan Islam', mark: 85, grade: 'A' },
+      { code: 'SE', name: 'Sejarah', mark: 65, grade: 'B' },
+    ],
+  },
+  {
+    year: 3,
+    semester: 2,
+    examName: 'Peperiksaan Akhir Tahun',
+    examDate: '2022-11',
+    class: '3 Amanah',
+    subjects: [
+      { code: 'BM', name: 'Bahasa Melayu', mark: 70, grade: 'B+' },
+      { code: 'BI', name: 'Bahasa Inggeris', mark: 58, grade: 'C+' },
+      { code: 'MT', name: 'Matematik', mark: 77, grade: 'B+' },
+      { code: 'SC', name: 'Sains', mark: 68, grade: 'B' },
+      { code: 'PI', name: 'Pendidikan Islam', mark: 82, grade: 'A' },
+      { code: 'SE', name: 'Sejarah', mark: 60, grade: 'B' },
+    ],
+  },
+  {
+    year: 3,
+    semester: 1,
+    examName: 'Peperiksaan Pertengahan Tahun',
+    examDate: '2022-05',
+    class: '3 Amanah',
+    subjects: [
+      { code: 'BM', name: 'Bahasa Melayu', mark: 65, grade: 'B' },
+      { code: 'BI', name: 'Bahasa Inggeris', mark: 55, grade: 'C+' },
+      { code: 'MT', name: 'Matematik', mark: 72, grade: 'B+' },
+      { code: 'SC', name: 'Sains', mark: 64, grade: 'B' },
+      { code: 'PI', name: 'Pendidikan Islam', mark: 78, grade: 'B+' },
+      { code: 'SE', name: 'Sejarah', mark: 58, grade: 'C+' },
+    ],
+  },
+];
+
+const getGradeColor = (grade: string) => {
+  if (grade === 'A+') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+  if (grade === 'A') return 'bg-green-100 text-green-800 border-green-300';
+  if (grade === 'B+') return 'bg-blue-100 text-blue-800 border-blue-300';
+  if (grade === 'B') return 'bg-sky-100 text-sky-800 border-sky-300';
+  if (grade === 'C+') return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+  if (grade === 'C') return 'bg-orange-100 text-orange-800 border-orange-300';
+  return 'bg-red-100 text-red-800 border-red-300';
+};
+
+// Group results by school year
+const resultsByYear = examResults.reduce((acc, exam) => {
+  if (!acc[exam.year]) acc[exam.year] = [];
+  acc[exam.year].push(exam);
+  return acc;
+}, {} as Record<number, typeof examResults>);
+
+// Sort years descending
+const sortedYears = Object.keys(resultsByYear).map(Number).sort((a, b) => b - a);
 
 export default function ParentPortalPage() {
   const student = mockStudents[0];
@@ -39,6 +138,7 @@ export default function ParentPortalPage() {
   const [currentReceipt, setCurrentReceipt] = useState<PaymentReceipt | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [notificationDialog, setNotificationDialog] = useState(false);
+  const [selectedResultYear, setSelectedResultYear] = useState(sortedYears[0]);
 
   // Format currency with thousand separators
   const formatCurrency = (amount: number) => {
@@ -683,6 +783,8 @@ export default function ParentPortalPage() {
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payment History</TabsTrigger>
           <TabsTrigger value="statement">Statement of Account</TabsTrigger>
+          <TabsTrigger value="subsidy">Subsidy</TabsTrigger>
+          <TabsTrigger value="results">Results</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
@@ -868,6 +970,503 @@ export default function ParentPortalPage() {
                     })}
                   </TableBody>
                 </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subsidy" className="space-y-6">
+          {(() => {
+            const subsidyRule = mockSubsidyRules.find(r => r.category === student.subsidyCategory);
+            const subsidyPercentage = subsidyRule?.percentage || 0;
+            const maxMonthlySubsidy = subsidyRule?.maxAmount || 0;
+            const monthlySubsidy = Math.min(student.monthlyFee * (subsidyPercentage / 100), maxMonthlySubsidy);
+            const annualAllocation = maxMonthlySubsidy * 12;
+            const totalSubsidyUsed = allInvoices.reduce((sum, inv) => sum + inv.subsidyAmount, 0);
+            const utilizationRate = annualAllocation > 0 ? Math.round((totalSubsidyUsed / annualAllocation) * 100) : 0;
+            const remainingAllocation = annualAllocation - totalSubsidyUsed;
+
+            const fundSource = student.subsidyCategory === 'Asnaf' ? 'Dana Zakat' : student.subsidyCategory === 'B40' ? 'Dana Zakat' : 'Sumber Am';
+            const subsidyCode = `SUB-${student.subsidyCategory}-2024`;
+            const validFrom = new Date('2024-01-01');
+            const validUntil = new Date('2024-12-31');
+            const renewalDate = new Date('2024-11-01');
+
+            return (
+              <>
+                {/* Subsidy Tier Info */}
+                <Card className="border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/50">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Shield className="h-5 w-5 text-green-600" />
+                          Subsidy Entitlement
+                        </CardTitle>
+                        <CardDescription>Your child&apos;s subsidy allocation details</CardDescription>
+                      </div>
+                      <Badge className="bg-green-600 text-white text-sm px-3 py-1">{student.subsidyCategory}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
+                        <p className="text-xs text-gray-500">Subsidy Rate</p>
+                        <p className="text-2xl font-bold text-green-700">{subsidyPercentage}%</p>
+                        <p className="text-xs text-gray-500">of monthly fee</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
+                        <p className="text-xs text-gray-500">Monthly Subsidy</p>
+                        <p className="text-2xl font-bold text-green-700">RM {formatCurrency(monthlySubsidy)}</p>
+                        <p className="text-xs text-gray-500">max RM {formatCurrency(maxMonthlySubsidy)}/mo</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
+                        <p className="text-xs text-gray-500">You Pay</p>
+                        <p className="text-2xl font-bold text-blue-700">RM {formatCurrency(student.monthlyFee - monthlySubsidy)}</p>
+                        <p className="text-xs text-gray-500">per month</p>
+                      </div>
+                      <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
+                        <p className="text-xs text-gray-500">Fund Source</p>
+                        <p className="text-lg font-bold text-purple-700">{fundSource}</p>
+                        <p className="text-xs text-gray-500 font-mono">{subsidyCode}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Annual Allocation & Utilization */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <PiggyBank className="h-4 w-4 text-green-600" />
+                        Annual Allocation
+                      </CardTitle>
+                      <CardDescription>Year 2024 subsidy budget for your child</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Total Annual Allocation</span>
+                          <span className="font-bold">RM {formatCurrency(annualAllocation)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Used So Far</span>
+                          <span className="font-bold text-green-700">RM {formatCurrency(totalSubsidyUsed)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Remaining</span>
+                          <span className="font-bold text-blue-700">RM {formatCurrency(remainingAllocation)}</span>
+                        </div>
+                      </div>
+
+                      {/* Utilization Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Utilization</span>
+                          <span>{utilizationRate}%</span>
+                        </div>
+                        <div className="h-4 rounded-full bg-gray-200 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              utilizationRate > 80 ? 'bg-orange-500' : utilizationRate > 50 ? 'bg-green-500' : 'bg-blue-500'
+                            }`}
+                            style={{ width: `${Math.min(utilizationRate, 100)}%` }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {allInvoices.filter(inv => inv.subsidyAmount > 0).length} of 12 months claimed
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        Subsidy Details
+                      </CardTitle>
+                      <CardDescription>Eligibility and validity information</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 border">
+                          <span className="text-sm text-gray-600">Category</span>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">{student.subsidyCategory}</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 border">
+                          <span className="text-sm text-gray-600">Household Income</span>
+                          <span className="text-sm font-semibold">
+                            RM {formatCurrency(subsidyRule?.minIncome || 0)} – RM {formatCurrency(subsidyRule?.maxIncome || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 border">
+                          <span className="text-sm text-gray-600">Valid Period</span>
+                          <span className="text-sm font-semibold">
+                            {format(validFrom, 'dd MMM yyyy')} – {format(validUntil, 'dd MMM yyyy')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center p-2.5 rounded-lg bg-yellow-50 border border-yellow-200">
+                          <span className="text-sm text-yellow-700">Renewal By</span>
+                          <span className="text-sm font-semibold text-yellow-700">{format(renewalDate, 'dd MMM yyyy')}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-2.5 rounded-lg bg-gray-50 border">
+                          <span className="text-sm text-gray-600">Status</span>
+                          <Badge className="bg-green-500 text-white">Active</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Monthly Subsidy Breakdown */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <HandCoins className="h-4 w-4 text-green-600" />
+                          Monthly Subsidy Breakdown
+                        </CardTitle>
+                        <CardDescription>How subsidy is applied to each invoice</CardDescription>
+                      </div>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Download className="h-3 w-3" />
+                        Export
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Month</TableHead>
+                          <TableHead>Invoice</TableHead>
+                          <TableHead className="text-right">Full Fee</TableHead>
+                          <TableHead className="text-right">Subsidy ({subsidyPercentage}%)</TableHead>
+                          <TableHead className="text-right">You Pay</TableHead>
+                          <TableHead>Fund</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {allInvoices.map((inv) => (
+                          <TableRow key={inv.id}>
+                            <TableCell className="font-medium">
+                              {format(inv.issueDate, 'MMM yyyy')}
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">{inv.invoiceNumber}</TableCell>
+                            <TableCell className="text-right">RM {formatCurrency(inv.amount)}</TableCell>
+                            <TableCell className="text-right font-semibold text-green-700">
+                              – RM {formatCurrency(inv.subsidyAmount)}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              RM {formatCurrency(inv.netAmount)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200">
+                                {fundSource}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={
+                                inv.status === 'paid' ? 'bg-green-500' :
+                                inv.status === 'pending' ? 'bg-yellow-500' :
+                                inv.status === 'partially_paid' ? 'bg-orange-500' : 'bg-red-500'
+                              }>
+                                {inv.status === 'paid' ? 'Applied' :
+                                 inv.status === 'pending' ? 'Pending' :
+                                 inv.status === 'partially_paid' ? 'Partial' : 'Overdue'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+
+                    {/* Summary Row */}
+                    <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                          <p className="text-xs text-gray-500">Total Fees</p>
+                          <p className="text-lg font-bold">RM {formatCurrency(allInvoices.reduce((s, inv) => s + inv.amount, 0))}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Total Subsidy</p>
+                          <p className="text-lg font-bold text-green-700">– RM {formatCurrency(totalSubsidyUsed)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Your Total</p>
+                          <p className="text-lg font-bold text-blue-700">RM {formatCurrency(allInvoices.reduce((s, inv) => s + inv.netAmount, 0))}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* How Subsidy Works */}
+                <Card className="border-blue-200">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      How Subsidy Works
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <p className="font-semibold text-blue-800 mb-1">1. Eligibility</p>
+                        <p className="text-xs text-blue-700">Your household income bracket ({student.subsidyCategory}) determines the subsidy percentage. Verified annually via e-Kasih / MAIWP records.</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <p className="font-semibold text-blue-800 mb-1">2. Auto-Offset</p>
+                        <p className="text-xs text-blue-700">Each month, {subsidyPercentage}% (up to RM {formatCurrency(maxMonthlySubsidy)}) is automatically deducted from your invoice. You only pay the remaining balance.</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <p className="font-semibold text-blue-800 mb-1">3. Fund Source</p>
+                        <p className="text-xs text-blue-700">Your subsidy is funded by <strong>{fundSource}</strong> under MAIWP. All allocations are tracked and audited for transparency.</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            );
+          })()}
+        </TabsContent>
+
+        <TabsContent value="results" className="space-y-6">
+          {/* Overall Progress Summary */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="h-5 w-5" />
+                    Exam Results
+                  </CardTitle>
+                  <CardDescription>Academic performance sorted by school year and semester</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Progress trend — compare latest vs previous */}
+              {(() => {
+                const latest = examResults[0];
+                const previous = examResults[1];
+                const latestAvg = Math.round(latest.subjects.reduce((s, sub) => s + sub.mark, 0) / latest.subjects.length);
+                const prevAvg = Math.round(previous.subjects.reduce((s, sub) => s + sub.mark, 0) / previous.subjects.length);
+                const diff = latestAvg - prevAvg;
+
+                return (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">
+                      <p className="text-sm text-gray-600">Latest Average</p>
+                      <p className="text-3xl font-bold text-blue-700">{latestAvg}%</p>
+                      <p className="text-xs text-gray-500">Year {latest.year} Sem {latest.semester}</p>
+                    </div>
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                      <p className="text-sm text-gray-600">Previous Average</p>
+                      <p className="text-3xl font-bold text-gray-700">{prevAvg}%</p>
+                      <p className="text-xs text-gray-500">Year {previous.year} Sem {previous.semester}</p>
+                    </div>
+                    <div className={`p-4 rounded-lg border text-center ${diff > 0 ? 'bg-green-50 border-green-200' : diff < 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <p className="text-sm text-gray-600">Trend</p>
+                      <div className="flex items-center justify-center gap-1">
+                        {diff > 0 ? <TrendingUp className="h-5 w-5 text-green-600" /> : diff < 0 ? <TrendingDown className="h-5 w-5 text-red-600" /> : <Minus className="h-5 w-5 text-gray-600" />}
+                        <p className={`text-3xl font-bold ${diff > 0 ? 'text-green-700' : diff < 0 ? 'text-red-700' : 'text-gray-700'}`}>
+                          {diff > 0 ? '+' : ''}{diff}%
+                        </p>
+                      </div>
+                      <p className="text-xs text-gray-500">{diff > 0 ? 'Improving' : diff < 0 ? 'Declining' : 'Stable'}</p>
+                    </div>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* AI Analysis */}
+          <Card className="border-purple-200 bg-gradient-to-br from-purple-50/50 to-indigo-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+                AI Performance Analysis
+              </CardTitle>
+              <CardDescription>Powered by AI — based on overall exam history</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                  <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Consistent Upward Trend</p>
+                    <p className="text-xs text-green-700 mt-0.5">Ahmad shows steady improvement across all semesters. Overall average has increased from 65% (Year 3 Sem 1) to 81% (Year 5 Sem 1), a <span className="font-bold">+16% growth</span> over 3 years.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                  <BookOpen className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-blue-800">Strongest Subject: Pendidikan Islam</p>
+                    <p className="text-xs text-blue-700 mt-0.5">Consistently scores A or A+ across all semesters (78% to 91%). This subject anchors the overall performance. Matematik is also a strong suit with steady A grades.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                  <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-orange-800">Focus Area: Bahasa Inggeris</p>
+                    <p className="text-xs text-orange-700 mt-0.5">English has been the weakest subject since Year 3 (55% → 71%). While improving, it still lags behind other subjects by ~10 marks. Consider extra tuition or reading programmes to close the gap.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
+                  <Sparkles className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-purple-800">Prediction for Year 5 Sem 2</p>
+                    <p className="text-xs text-purple-700 mt-0.5">Based on the current growth trajectory, Ahmad is on track to achieve an overall average of <span className="font-bold">83-86%</span> in the final exam. Maintaining focus on Bahasa Inggeris and Sejarah could push this to 88%+.</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Year Selector + Results */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {sortedYears.map(year => (
+                  <Button
+                    key={year}
+                    variant={selectedResultYear === year ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedResultYear(year)}
+                    className="gap-1"
+                  >
+                    Year {year}
+                    {year === sortedYears[0] && (
+                      <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">Current</Badge>
+                    )}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {resultsByYear[selectedResultYear].length} exam(s)
+              </p>
+            </div>
+
+            {resultsByYear[selectedResultYear]
+              .sort((a, b) => b.semester - a.semester)
+              .map((exam) => {
+                const avg = Math.round(exam.subjects.reduce((s, sub) => s + sub.mark, 0) / exam.subjects.length);
+                const highestSubject = exam.subjects.reduce((a, b) => a.mark > b.mark ? a : b);
+                const lowestSubject = exam.subjects.reduce((a, b) => a.mark < b.mark ? a : b);
+
+                return (
+                  <Card key={`${selectedResultYear}-${exam.semester}`}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base">{exam.examName}</CardTitle>
+                          <CardDescription>
+                            Semester {exam.semester} · Class {exam.class} · {exam.examDate}
+                          </CardDescription>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-blue-700">{avg}%</div>
+                          <p className="text-xs text-muted-foreground">Average</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Subject</TableHead>
+                            <TableHead className="text-center">Mark</TableHead>
+                            <TableHead className="text-center">Grade</TableHead>
+                            <TableHead className="hidden sm:table-cell">Performance</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {exam.subjects.map(subject => (
+                            <TableRow key={subject.code}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{subject.name}</p>
+                                  <p className="text-xs text-muted-foreground font-mono">{subject.code}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <span className="text-lg font-semibold">{subject.mark}</span>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Badge className={`${getGradeColor(subject.grade)} border font-bold px-3`}>
+                                  {subject.grade}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 h-2 rounded-full bg-gray-200">
+                                    <div
+                                      className={`h-2 rounded-full ${
+                                        subject.mark >= 80 ? 'bg-green-500' :
+                                        subject.mark >= 60 ? 'bg-blue-500' :
+                                        subject.mark >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                                      }`}
+                                      style={{ width: `${subject.mark}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-muted-foreground w-10">{subject.mark}%</span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+
+                      {/* Semester highlights */}
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                          <p className="text-xs text-green-700">Highest</p>
+                          <p className="font-semibold text-green-800">{highestSubject.name}</p>
+                          <p className="text-sm text-green-700 font-mono">{highestSubject.mark}% ({highestSubject.grade})</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-orange-50 border border-orange-200">
+                          <p className="text-xs text-orange-700">Needs Improvement</p>
+                          <p className="font-semibold text-orange-800">{lowestSubject.name}</p>
+                          <p className="text-sm text-orange-700 font-mono">{lowestSubject.mark}% ({lowestSubject.grade})</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+          </div>
+
+          {/* KSSR Grading Scale Reference */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">KSSR Grading Scale</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+                {[
+                  { grade: 'A+', range: '90-100', label: 'Cemerlang' },
+                  { grade: 'A', range: '80-89', label: 'Terpuji' },
+                  { grade: 'B+', range: '70-79', label: 'Kepujian' },
+                  { grade: 'B', range: '60-69', label: 'Baik' },
+                  { grade: 'C+', range: '50-59', label: 'Sederhana' },
+                  { grade: 'C', range: '40-49', label: 'Penguasaan Asas' },
+                  { grade: 'D/E', range: '0-39', label: 'Belum Menguasai' },
+                ].map(g => (
+                  <div key={g.grade} className={`p-2 rounded-lg border text-center ${getGradeColor(g.grade)}`}>
+                    <p className="font-bold text-sm">{g.grade}</p>
+                    <p className="text-[10px]">{g.range}</p>
+                    <p className="text-[10px] mt-0.5 opacity-70">{g.label}</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

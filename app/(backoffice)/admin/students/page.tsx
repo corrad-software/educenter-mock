@@ -10,12 +10,20 @@ import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
 import { Pagination } from '@/components/ui/pagination';
 import { UserPlus, Search, Pencil, Trash2, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { useEducationStore } from '@/lib/store/education-store';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { selectedLevel } = useEducationStore();
+  const level = selectedLevel ?? 'primary';
+
+  // For MAIWP show all; otherwise filter to the selected education level
+  const levelStudents = level === 'maiwp'
+    ? malaysianStudents
+    : malaysianStudents.filter(s => s.educationLevel === level);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -32,18 +40,18 @@ export default function StudentsPage() {
     }
   };
 
-  const filteredStudents = malaysianStudents.filter(student =>
+  const filteredStudents = levelStudents.filter(student =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.studentCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.ic.includes(searchQuery)
   );
 
   // Calculate statistics
-  const totalStudents = malaysianStudents.length;
-  const activeStudents = malaysianStudents.filter(s => s.status === 'active').length;
-  const pendingStudents = malaysianStudents.filter(s => s.status === 'pending').length;
-  const b40Students = malaysianStudents.filter(s => s.subsidyCategory === 'B40').length;
-  const m40Students = malaysianStudents.filter(s => s.subsidyCategory === 'M40').length;
+  const totalStudents = levelStudents.length;
+  const activeStudents = levelStudents.filter(s => s.status === 'active').length;
+  const pendingStudents = levelStudents.filter(s => s.status === 'pending').length;
+  const b40Students = levelStudents.filter(s => s.subsidyCategory === 'B40').length;
+  const m40Students = levelStudents.filter(s => s.subsidyCategory === 'M40').length;
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);

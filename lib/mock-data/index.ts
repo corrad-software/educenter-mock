@@ -418,3 +418,5 @@ export const mockDashboardStats: DashboardStats = {
   attendanceRate: 94.5,
   pendingApprovals: 3,
 };
+
+export { mockApplications, mockTransferRequests, mockWithdrawalRequests, mockTimelineEvents } from './student-lifecycle';

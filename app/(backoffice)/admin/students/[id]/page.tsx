@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
-import { ChevronRight, Home, Users, ArrowLeft, Calendar, Building2, DollarSign, User, Phone, Mail, MapPin, Check, X, Clock, CreditCard, Receipt, TrendingUp, List, CalendarDays, ChevronLeft as ChevronLeftIcon } from 'lucide-react';
+import { ChevronRight, Home, Users, ArrowLeft, Calendar, Building2, DollarSign, User, Phone, Mail, MapPin, Check, X, Clock, CreditCard, Receipt, TrendingUp, List, CalendarDays, ChevronLeft as ChevronLeftIcon, Gift, ArrowRightLeft, UserMinus, History } from 'lucide-react';
+import { generateStudentPDF } from '@/lib/utils/generate-student-pdf';
+import { StudentTimeline } from '@/components/student-lifecycle/student-timeline';
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -119,6 +121,15 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const totalPaid = feeData.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.amount, 0);
   const totalPending = feeData.filter(f => f.status === 'pending').reduce((sum, f) => sum + f.amount, 0);
 
+  // Subsidy calculation based on category
+  const subsidyCoverage: Record<string, number> = { B40: 0.80, M40: 0.50, Asnaf: 1.00, T20: 0, None: 0 };
+  const subsidyFundSource: Record<string, string> = { B40: 'Zakat', M40: 'Sumber Am', Asnaf: 'Wakaf', T20: 'N/A', None: 'N/A' };
+  const coverageRate = subsidyCoverage[student.subsidyCategory] ?? 0;
+  const monthlySubsidy = Math.round(student.monthlyFee * coverageRate);
+  const paidMonths = feeData.filter(f => f.status === 'paid').length;
+  const totalSubsidyCredited = monthlySubsidy * paidMonths;
+  const fundSource = subsidyFundSource[student.subsidyCategory] ?? 'N/A';
+
   const getAttendanceColor = (status: string) => {
     switch (status) {
       case 'present': return 'bg-green-500';
@@ -176,7 +187,16 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button
+            variant="outline"
+            className="gap-2 cursor-pointer"
+            onClick={() => generateStudentPDF(
+              student,
+              { presentCount, lateCount, absentCount, totalDays: attendanceArray.length, attendanceRate },
+              feeData,
+              { subsidyCategory: student.subsidyCategory, monthlySubsidy, totalSubsidyCredited, monthsCovered: paidMonths, fundSource },
+            )}
+          >
             <Receipt className="h-4 w-4" />
             Generate Report
           </Button>
@@ -188,7 +208,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Overview Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
@@ -230,6 +250,17 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">RM {totalPending}</div>
             <p className="text-xs text-muted-foreground">{feeData.filter(f => f.status === 'pending').length} month(s)</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Subsidy Credited</CardTitle>
+            <Gift className="h-4 w-4 text-teal-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-teal-600">RM {totalSubsidyCredited}</div>
+            <p className="text-xs text-muted-foreground">{student.subsidyCategory} — {fundSource}</p>
           </CardContent>
         </Card>
       </div>
@@ -355,6 +386,47 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
               <p className="font-medium">{student.centre.capacity} students</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Subsidy Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Gift className="h-5 w-5" />
+            Subsidy Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div>
+              <p className="text-sm text-muted-foreground">Subsidy Category</p>
+              <Badge variant="outline" className="mt-1 bg-blue-50 text-blue-700 border-blue-300">
+                {student.subsidyCategory}
+              </Badge>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Fund Source</p>
+              <p className="font-medium">{fundSource}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Coverage Rate</p>
+              <p className="font-medium">{(coverageRate * 100).toFixed(0)}%</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Monthly Subsidy</p>
+              <p className="font-medium text-teal-600">RM {monthlySubsidy.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Credited ({paidMonths} months)</p>
+              <p className="font-semibold text-lg text-teal-600">RM {totalSubsidyCredited.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+          {coverageRate === 0 && (
+            <div className="mt-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+              <p className="text-sm text-muted-foreground">This student is not eligible for subsidy under the {student.subsidyCategory} category.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -581,6 +653,47 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
               ))}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      {/* Lifecycle Actions & Timeline */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Student Lifecycle
+            </CardTitle>
+            <div className="flex gap-2">
+              {student.status === 'active' && (
+                <>
+                  <Link href="/admin/students/transfers">
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                      <ArrowRightLeft className="h-3.5 w-3.5" />
+                      Transfer
+                    </Button>
+                  </Link>
+                  <Link href="/admin/students/alumni">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50">
+                      <UserMinus className="h-3.5 w-3.5" />
+                      Withdraw
+                    </Button>
+                  </Link>
+                </>
+              )}
+              {(student.status === 'withdrawn') && (
+                <Link href="/admin/students/alumni">
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <History className="h-3.5 w-3.5" />
+                    Re-enroll
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <StudentTimeline studentId={student.id} />
         </CardContent>
       </Card>
     </div>

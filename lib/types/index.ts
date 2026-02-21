@@ -1,6 +1,67 @@
 // Core types for EduCentre system
 
-export type UserRole = 'parent' | 'centre_admin' | 'centre_head' | 'department_head' | 'finance_admin' | 'auditor';
+// ============================================================
+// EDUCATION LEVEL SYSTEM
+// ============================================================
+
+export type EducationLevel = 'maiwp' | 'preschool' | 'primary' | 'secondary' | 'university';
+
+export type PortalRole = 'admin' | 'parent' | 'teacher';
+
+export type BandScore = 'Emerging' | 'Developing' | 'Achieving' | 'Exceeding';
+
+export type SessionType = 'morning' | 'afternoon';
+
+export interface SubjectRecord {
+  code: string;
+  name: string;
+  nameMs?: string;
+  isCore: boolean;
+  creditHours?: number;
+}
+
+export interface ScoreEntry {
+  studentId: string;
+  subjectCode: string;
+  term: string;
+  rawScore?: number;
+  grade?: string;
+  band?: BandScore;
+  gpa?: number;
+  creditHours?: number;
+}
+
+export interface ScheduleSlot {
+  day: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday';
+  period: number;
+  startTime: string;
+  endTime: string;
+  subjectCode: string;
+  subjectName: string;
+  room?: string;
+  teacherName?: string;
+}
+
+export interface DaySession {
+  session: SessionType;
+  startTime: string;
+  endTime: string;
+  activities: string[];
+}
+
+export interface CourseModule {
+  code: string;
+  name: string;
+  creditHours: number;
+  lectureHoursPerWeek: number;
+  tutorialHoursPerWeek: number;
+  labHoursPerWeek: number;
+  semester: string;
+}
+
+// ============================================================
+
+export type UserRole = 'parent' | 'centre_admin' | 'centre_head' | 'department_head' | 'finance_admin' | 'auditor' | 'teacher';
 
 export type StudentStatus = 'active' | 'pending' | 'transferred' | 'withdrawn' | 'alumni';
 
@@ -162,3 +223,17 @@ export interface DashboardStats {
   attendanceRate: number;
   pendingApprovals: number;
 }
+
+// ============================================================
+// TEACHER PORTAL TYPES
+// ============================================================
+
+export type LogbookEntryType = 'General' | 'Health' | 'Behaviour' | 'Achievement' | 'Incident';
+
+export type MoodIndicator = 'Happy' | 'Neutral' | 'Sad' | 'Anxious' | 'Energetic';
+
+export type DisciplineType = 'merit' | 'demerit';
+
+export type DisciplineCategory = 'Academic' | 'Behaviour' | 'Punctuality' | 'Uniform' | 'Participation' | 'Leadership' | 'Cleanliness';
+
+export * from './student-lifecycle';

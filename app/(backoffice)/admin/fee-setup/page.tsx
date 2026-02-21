@@ -12,9 +12,16 @@ import { feeStructures, FeeStructure } from '@/lib/mock-data/fee-structures';
 import { malaysianInstitutes } from '@/lib/mock-data/malaysian-institutes';
 import { Settings, DollarSign, Pencil, Eye, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { useEducationStore } from '@/lib/store/education-store';
+import { LEVEL_META, LEVEL_COLOR_CLASSES } from '@/lib/education-config';
 
 export default function FeeSetupPage() {
   const [selectedInstitute, setSelectedInstitute] = useState('all');
+  const { selectedLevel } = useEducationStore();
+  const level = selectedLevel ?? 'primary';
+  const meta = LEVEL_META[level];
+  const colors = LEVEL_COLOR_CLASSES[level];
+  const isUniversity = level === 'university';
 
   const filteredStructures = selectedInstitute === 'all'
     ? feeStructures
@@ -40,9 +47,12 @@ export default function FeeSetupPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fee Setup</h1>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-3xl font-bold tracking-tight">{meta.feeModelLabel} Setup</h1>
+            <Badge className={`${colors.bg} text-white text-xs font-bold`}>{meta.badgeLabel}</Badge>
+          </div>
           <p className="text-muted-foreground">
-            Configure monthly fees and subsidy rates for each institute
+            Configure {isUniversity ? 'semester and credit-hour' : 'monthly'} fees and subsidy rates for each {isUniversity ? 'faculty' : 'institute'}
           </p>
         </div>
         <Link href="/admin/fee-setup/add">
@@ -52,6 +62,64 @@ export default function FeeSetupPage() {
           </Button>
         </Link>
       </div>
+
+      {/* University Semester Fee Calculator */}
+      {isUniversity && (
+        <Card className={`border-2 ${colors.border} ${colors.lightBg}`}>
+          <CardHeader>
+            <CardTitle className={colors.text}>Semester Fee Summary</CardTitle>
+            <CardDescription>Credit-hour based fee calculation for 2024/2025 Semester 2</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Credit Hours Enrolled</span>
+                  <span className="font-semibold">18 hrs</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Fee per Credit Hour</span>
+                  <span className="font-semibold">RM 250.00</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tuition Fee (18 × RM250)</span>
+                  <span className="font-semibold">RM 4,500.00</span>
+                </div>
+                <div className="border-t pt-2 space-y-1">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Registration Fee</span><span>RM 200.00</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Facilities Fee</span><span>RM 150.00</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Technology Fee</span><span>RM 100.00</span>
+                  </div>
+                </div>
+                <div className="flex justify-between font-bold text-base border-t pt-2">
+                  <span>Total Semester Fee</span>
+                  <span className={colors.text}>RM 4,950.00</span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-gray-700">Subsidy Rates (Same as School)</p>
+                {[
+                  { cat: 'Asnaf', pct: 100, final: 'RM 0.00' },
+                  { cat: 'B40', pct: 50, final: 'RM 2,475.00' },
+                  { cat: 'M40', pct: 30, final: 'RM 3,465.00' },
+                  { cat: 'T20', pct: 0, final: 'RM 4,950.00' },
+                ].map(row => (
+                  <div key={row.cat} className="flex items-center justify-between text-sm">
+                    <Badge variant="outline" className="text-xs">{row.cat}</Badge>
+                    <span className="text-muted-foreground">{row.pct}% discount</span>
+                    <span className="font-semibold">{row.final}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
