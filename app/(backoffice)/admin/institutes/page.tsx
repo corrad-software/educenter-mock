@@ -11,6 +11,7 @@ import { Pagination } from '@/components/ui/pagination';
 import { Building2, Search, Pencil, Trash2, UserPlus, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { useEducationStore } from '@/lib/store/education-store';
+import { Tooltip } from '@/components/ui/tooltip';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -188,20 +189,26 @@ export default function InstitutesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/institutes/${institute.id}`} className="cursor-pointer">
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                          <Eye className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      <Tooltip label="View">
+                        <Link href={`/admin/institutes/${institute.id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </Tooltip>
+                      <Tooltip label="Edit">
+                        <Link href={`/admin/institutes/edit/${institute.id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </Tooltip>
+                      <Tooltip label="Delete">
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </Link>
-                      <Link href={`/admin/institutes/edit/${institute.id}`}>
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>

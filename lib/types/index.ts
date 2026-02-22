@@ -75,6 +75,10 @@ export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 
+export type StaffStatus = 'active' | 'on_leave' | 'resigned' | 'contract';
+
+export type StaffRole = 'teacher' | 'assistant' | 'caregiver' | 'lecturer' | 'admin_staff' | 'support';
+
 export interface User {
   id: string;
   name: string;

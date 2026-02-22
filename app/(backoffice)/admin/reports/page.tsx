@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { LEVEL_STATS } from '@/lib/mock-data/level-data';
 import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
 import { malaysianInstitutes } from '@/lib/mock-data/malaysian-institutes';
+import { malaysianStaff } from '@/lib/mock-data/malaysian-staff';
 import { generateAgingData, generateAttendanceRecords, generateSubsidyData, generateFundBreakdown } from '@/lib/mock-data/report-data';
 import { useEducationStore } from '@/lib/store/education-store';
-import { TrendingUp, AlertCircle, Users, DollarSign, Calendar, Building2, Clock, FileBarChart, Download } from 'lucide-react';
+import { TrendingUp, AlertCircle, Users, DollarSign, Calendar, Building2, Clock, FileBarChart, Download, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ReportsHubPage() {
@@ -41,6 +42,10 @@ export default function ReportsHubPage() {
   const totalCapacity = levelInstitutes.reduce((sum, i) => sum + i.capacity, 0);
   const totalEnrolled = levelInstitutes.reduce((sum, i) => sum + i.students, 0);
   const capacityUtilRate = totalCapacity > 0 ? Math.round((totalEnrolled / totalCapacity) * 100) : 0;
+
+  const levelStaff = level === 'maiwp' ? malaysianStaff : malaysianStaff.filter(s => s.educationLevel === level);
+  const teachingStaffCount = levelStaff.filter(s => ['teacher', 'caregiver', 'lecturer'].includes(s.role) && s.status === 'active').length;
+  const staffRatio = teachingStaffCount > 0 ? (totalEnrolled / teachingStaffCount).toFixed(1) : '0';
 
   const reportCards = [
     {
@@ -113,6 +118,18 @@ export default function ReportsHubPage() {
         { label: 'Allocated', value: `RM ${totalSubsidyAllocated.toLocaleString('en-MY')}` },
         { label: 'Utilized', value: `RM ${totalSubsidyUtilized.toLocaleString('en-MY')}` },
         { label: 'Utilization Rate', value: `${subsidyUtilRate}%` },
+      ],
+    },
+    {
+      title: 'Staff-to-Student Ratio',
+      description: 'Compliance with staffing ratios per centre',
+      href: '/admin/reports/staff-ratio',
+      icon: UserCheck,
+      iconColor: 'text-indigo-500',
+      metrics: [
+        { label: 'Teaching Staff', value: teachingStaffCount },
+        { label: 'Total Students', value: totalEnrolled },
+        { label: 'Overall Ratio', value: `1:${staffRatio}` },
       ],
     },
   ];

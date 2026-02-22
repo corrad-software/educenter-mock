@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "EduCentre - MAIWP Student Management Portal",
   description: "Integrated Student Management Portal for MAIWP",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

@@ -8,14 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
 import { Pagination } from '@/components/ui/pagination';
-import { UserPlus, Search, Pencil, Trash2, Eye } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { UserPlus, Search, Pencil, Trash2, Eye, Filter } from 'lucide-react';
 import Link from 'next/link';
 import { useEducationStore } from '@/lib/store/education-store';
+import { Tooltip } from '@/components/ui/tooltip';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [subsidyFilter, setSubsidyFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const { selectedLevel } = useEducationStore();
   const level = selectedLevel ?? 'primary';
@@ -40,11 +44,15 @@ export default function StudentsPage() {
     }
   };
 
-  const filteredStudents = levelStudents.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.studentCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.ic.includes(searchQuery)
-  );
+  const filteredStudents = levelStudents.filter(student => {
+    const matchesSearch = searchQuery === '' ||
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.studentCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.ic.includes(searchQuery);
+    const matchesStatus = statusFilter === 'all' || student.status === statusFilter;
+    const matchesSubsidy = subsidyFilter === 'all' || student.subsidyCategory === subsidyFilter;
+    return matchesSearch && matchesStatus && matchesSubsidy;
+  });
 
   // Calculate statistics
   const totalStudents = levelStudents.length;
@@ -150,6 +158,32 @@ export default function StudentsPage() {
                   onChange={handleSearchChange}
                 />
               </div>
+              <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
+                <SelectTrigger className="w-36">
+                  <Filter className="h-4 w-4 mr-1" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="withdrawn">Withdrawn</SelectItem>
+                  <SelectItem value="transferred">Transferred</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={subsidyFilter} onValueChange={(value) => { setSubsidyFilter(value); setCurrentPage(1); }}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Subsidy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Subsidy</SelectItem>
+                  <SelectItem value="B40">B40</SelectItem>
+                  <SelectItem value="M40">M40</SelectItem>
+                  <SelectItem value="T20">T20</SelectItem>
+                  <SelectItem value="Asnaf">Asnaf</SelectItem>
+                  <SelectItem value="None">None</SelectItem>
+                </SelectContent>
+              </Select>
               <Link href="/admin/students/add">
                 <Button className="gap-2">
                   <UserPlus className="h-4 w-4" />
@@ -192,20 +226,26 @@ export default function StudentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/students/${student.id}`} className="cursor-pointer">
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                          <Eye className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                      <Tooltip label="View">
+                        <Link href={`/admin/students/${student.id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </Tooltip>
+                      <Tooltip label="Edit">
+                        <Link href={`/admin/students/edit/${student.id}`}>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </Tooltip>
+                      <Tooltip label="Delete">
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </Link>
-                      <Link href={`/admin/students/edit/${student.id}`}>
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>

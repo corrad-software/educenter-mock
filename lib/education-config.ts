@@ -74,7 +74,7 @@ export interface LevelMeta {
 export const LEVEL_META: Record<EducationLevel, LevelMeta> = {
   maiwp: {
     id: 'maiwp',
-    label: 'MAIWP – System Administration',
+    label: 'System Administration',
     labelMs: 'Majlis Agama Islam Wilayah Persekutuan',
     ageRange: 'All Levels',
     description: 'Central administration for all Islamic education institutions under MAIWP',
@@ -337,6 +337,13 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'students-alumni', label: 'Alumni', href: '/admin/students/alumni', iconName: 'GraduationCap' },
       ],
     },
+    {
+      id: 'staff', label: 'Staff', href: '/admin/staff', iconName: 'UserCheck',
+      children: [
+        { id: 'staff-all', label: 'All Staff', href: '/admin/staff', iconName: 'UserCheck' },
+        { id: 'staff-add', label: 'Add New', href: '/admin/staff/add', iconName: 'UserPlus' },
+      ],
+    },
     { id: 'attendance', label: 'Attendance', href: '/admin/attendance', iconName: 'Calendar' },
     {
       id: 'fees', label: 'Fees', href: '/admin/fees', iconName: 'DollarSign',
@@ -355,6 +362,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'reports-attendance', label: 'Attendance', href: '/admin/reports/attendance', iconName: 'Calendar' },
         { id: 'reports-capacity', label: 'Capacity', href: '/admin/reports/capacity', iconName: 'Building2' },
         { id: 'reports-subsidy', label: 'Subsidy', href: '/admin/reports/subsidy', iconName: 'DollarSign' },
+        { id: 'reports-staff-ratio', label: 'Staff Ratio', href: '/admin/reports/staff-ratio', iconName: 'UserCheck' },
       ],
     },
   ],
@@ -375,6 +383,13 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
       children: [
         { id: 'institutes-all', label: 'All Centres', href: '/admin/institutes', iconName: 'Building2' },
         { id: 'institutes-add', label: 'Add Centre', href: '/admin/institutes/add', iconName: 'UserPlus' },
+      ],
+    },
+    {
+      id: 'staff', label: 'Caregivers & Staff', href: '/admin/staff', iconName: 'UserCheck',
+      children: [
+        { id: 'staff-all', label: 'All Caregivers', href: '/admin/staff', iconName: 'UserCheck' },
+        { id: 'staff-add', label: 'Add New', href: '/admin/staff/add', iconName: 'UserPlus' },
       ],
     },
     { id: 'attendance', label: 'Attendance', href: '/admin/attendance', iconName: 'CalendarCheck' },
@@ -398,6 +413,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'reports-attendance', label: 'Attendance', href: '/admin/reports/attendance', iconName: 'Calendar' },
         { id: 'reports-capacity', label: 'Capacity', href: '/admin/reports/capacity', iconName: 'Building2' },
         { id: 'reports-subsidy', label: 'Subsidy', href: '/admin/reports/subsidy', iconName: 'DollarSign' },
+        { id: 'reports-staff-ratio', label: 'Staff Ratio', href: '/admin/reports/staff-ratio', iconName: 'UserCheck' },
       ],
     },
   ],
@@ -422,6 +438,13 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'institutes-cat', label: 'Categories', href: '/admin/institutes/categories', iconName: 'Folder' },
       ],
     },
+    {
+      id: 'staff', label: 'Teachers & Staff', href: '/admin/staff', iconName: 'UserCheck',
+      children: [
+        { id: 'staff-all', label: 'All Teachers', href: '/admin/staff', iconName: 'UserCheck' },
+        { id: 'staff-add', label: 'Add New', href: '/admin/staff/add', iconName: 'UserPlus' },
+      ],
+    },
     { id: 'attendance', label: 'Attendance', href: '/admin/attendance', iconName: 'Calendar' },
     { id: 'schedule', label: 'Period Timetable', href: '/admin/schedule', iconName: 'CalendarDays' },
     { id: 'subjects', label: 'Subjects (KSSR)', href: '/admin/subjects', iconName: 'BookOpen' },
@@ -443,6 +466,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'reports-attendance', label: 'Attendance', href: '/admin/reports/attendance', iconName: 'Calendar' },
         { id: 'reports-capacity', label: 'Capacity', href: '/admin/reports/capacity', iconName: 'Building2' },
         { id: 'reports-subsidy', label: 'Subsidy', href: '/admin/reports/subsidy', iconName: 'DollarSign' },
+        { id: 'reports-staff-ratio', label: 'Staff Ratio', href: '/admin/reports/staff-ratio', iconName: 'UserCheck' },
       ],
     },
   ],
@@ -467,6 +491,13 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'institutes-cat', label: 'Categories', href: '/admin/institutes/categories', iconName: 'Folder' },
       ],
     },
+    {
+      id: 'staff', label: 'Teachers & Staff', href: '/admin/staff', iconName: 'UserCheck',
+      children: [
+        { id: 'staff-all', label: 'All Teachers', href: '/admin/staff', iconName: 'UserCheck' },
+        { id: 'staff-add', label: 'Add New', href: '/admin/staff/add', iconName: 'UserPlus' },
+      ],
+    },
     { id: 'attendance', label: 'Attendance', href: '/admin/attendance', iconName: 'Calendar' },
     { id: 'schedule', label: 'Period Timetable', href: '/admin/schedule', iconName: 'CalendarDays' },
     { id: 'subjects', label: 'Subjects (SPM)', href: '/admin/subjects', iconName: 'BookOpen' },
@@ -488,6 +519,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'reports-attendance', label: 'Attendance', href: '/admin/reports/attendance', iconName: 'Calendar' },
         { id: 'reports-capacity', label: 'Capacity', href: '/admin/reports/capacity', iconName: 'Building2' },
         { id: 'reports-subsidy', label: 'Subsidy', href: '/admin/reports/subsidy', iconName: 'DollarSign' },
+        { id: 'reports-staff-ratio', label: 'Staff Ratio', href: '/admin/reports/staff-ratio', iconName: 'UserCheck' },
       ],
     },
   ],
@@ -508,6 +540,13 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
       children: [
         { id: 'institutes-all', label: 'All Faculties', href: '/admin/institutes', iconName: 'Building2' },
         { id: 'institutes-add', label: 'Add Faculty', href: '/admin/institutes/add', iconName: 'UserPlus' },
+      ],
+    },
+    {
+      id: 'staff', label: 'Lecturers & Staff', href: '/admin/staff', iconName: 'UserCheck',
+      children: [
+        { id: 'staff-all', label: 'All Lecturers', href: '/admin/staff', iconName: 'UserCheck' },
+        { id: 'staff-add', label: 'Add New', href: '/admin/staff/add', iconName: 'UserPlus' },
       ],
     },
     { id: 'attendance', label: 'Attendance', href: '/admin/attendance', iconName: 'Calendar' },
@@ -531,6 +570,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'reports-attendance', label: 'Attendance', href: '/admin/reports/attendance', iconName: 'Calendar' },
         { id: 'reports-capacity', label: 'Capacity', href: '/admin/reports/capacity', iconName: 'Building2' },
         { id: 'reports-subsidy', label: 'Subsidy', href: '/admin/reports/subsidy', iconName: 'DollarSign' },
+        { id: 'reports-staff-ratio', label: 'Staff Ratio', href: '/admin/reports/staff-ratio', iconName: 'UserCheck' },
       ],
     },
   ],

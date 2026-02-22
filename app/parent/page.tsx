@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mockInvoices, mockStudents, mockSubsidyRules } from '@/lib/mock-data';
 import { format } from 'date-fns';
-import { DollarSign, FileText, CreditCard, Bell, Calendar, User, MapPin, CheckCircle, Download, Printer, ChevronLeft, ChevronRight, Award, TrendingUp, TrendingDown, Minus, Sparkles, BookOpen, AlertTriangle, Shield, PiggyBank, HandCoins, Info } from 'lucide-react';
+import { DollarSign, FileText, CreditCard, Bell, Calendar, User, Users, MapPin, CheckCircle, Download, Printer, ChevronLeft, ChevronRight, Award, TrendingUp, TrendingDown, Minus, Sparkles, BookOpen, AlertTriangle, Shield, PiggyBank, HandCoins, Info, GraduationCap, School, Building } from 'lucide-react';
 import Image from 'next/image';
 import type { Invoice } from '@/lib/types';
 
@@ -24,84 +24,159 @@ interface PaymentReceipt {
   reference: string;
 }
 
-// Exam results sorted by year and semester (KSSR grading)
-const examResults = [
-  {
-    year: 5,
-    semester: 1,
-    examName: 'Peperiksaan Pertengahan Tahun',
-    examDate: '2024-05',
-    class: '5 Cemerlang',
-    subjects: [
-      { code: 'BM', name: 'Bahasa Melayu', mark: 82, grade: 'A' },
-      { code: 'BI', name: 'Bahasa Inggeris', mark: 71, grade: 'B+' },
-      { code: 'MT', name: 'Matematik', mark: 88, grade: 'A' },
-      { code: 'SC', name: 'Sains', mark: 79, grade: 'B+' },
-      { code: 'PI', name: 'Pendidikan Islam', mark: 91, grade: 'A+' },
-      { code: 'SE', name: 'Sejarah', mark: 74, grade: 'B+' },
-    ],
-  },
-  {
-    year: 4,
-    semester: 2,
-    examName: 'Peperiksaan Akhir Tahun',
-    examDate: '2023-11',
-    class: '4 Bestari',
-    subjects: [
-      { code: 'BM', name: 'Bahasa Melayu', mark: 78, grade: 'B+' },
-      { code: 'BI', name: 'Bahasa Inggeris', mark: 68, grade: 'B' },
-      { code: 'MT', name: 'Matematik', mark: 85, grade: 'A' },
-      { code: 'SC', name: 'Sains', mark: 76, grade: 'B+' },
-      { code: 'PI', name: 'Pendidikan Islam', mark: 88, grade: 'A' },
-      { code: 'SE', name: 'Sejarah', mark: 70, grade: 'B+' },
-    ],
-  },
-  {
-    year: 4,
-    semester: 1,
-    examName: 'Peperiksaan Pertengahan Tahun',
-    examDate: '2023-05',
-    class: '4 Bestari',
-    subjects: [
-      { code: 'BM', name: 'Bahasa Melayu', mark: 75, grade: 'B+' },
-      { code: 'BI', name: 'Bahasa Inggeris', mark: 62, grade: 'B' },
-      { code: 'MT', name: 'Matematik', mark: 80, grade: 'A' },
-      { code: 'SC', name: 'Sains', mark: 72, grade: 'B+' },
-      { code: 'PI', name: 'Pendidikan Islam', mark: 85, grade: 'A' },
-      { code: 'SE', name: 'Sejarah', mark: 65, grade: 'B' },
-    ],
-  },
-  {
-    year: 3,
-    semester: 2,
-    examName: 'Peperiksaan Akhir Tahun',
-    examDate: '2022-11',
-    class: '3 Amanah',
-    subjects: [
-      { code: 'BM', name: 'Bahasa Melayu', mark: 70, grade: 'B+' },
-      { code: 'BI', name: 'Bahasa Inggeris', mark: 58, grade: 'C+' },
-      { code: 'MT', name: 'Matematik', mark: 77, grade: 'B+' },
-      { code: 'SC', name: 'Sains', mark: 68, grade: 'B' },
-      { code: 'PI', name: 'Pendidikan Islam', mark: 82, grade: 'A' },
-      { code: 'SE', name: 'Sejarah', mark: 60, grade: 'B' },
-    ],
-  },
-  {
-    year: 3,
-    semester: 1,
-    examName: 'Peperiksaan Pertengahan Tahun',
-    examDate: '2022-05',
-    class: '3 Amanah',
-    subjects: [
-      { code: 'BM', name: 'Bahasa Melayu', mark: 65, grade: 'B' },
-      { code: 'BI', name: 'Bahasa Inggeris', mark: 55, grade: 'C+' },
-      { code: 'MT', name: 'Matematik', mark: 72, grade: 'B+' },
-      { code: 'SC', name: 'Sains', mark: 64, grade: 'B' },
-      { code: 'PI', name: 'Pendidikan Islam', mark: 78, grade: 'B+' },
-      { code: 'SE', name: 'Sejarah', mark: 58, grade: 'C+' },
-    ],
-  },
-];
+// Per-student exam results
+type ExamEntry = {
+  year: number;
+  semester: number;
+  examName: string;
+  examDate: string;
+  class: string;
+  subjects: { code: string; name: string; mark: number; grade: string }[];
+};
+
+type ChildMeta = {
+  level: string;
+  levelColor: string;
+  yearLabel: string;
+  photo?: string;
+  LevelIcon: React.ElementType;
+};
+
+const childrenMeta: Record<string, ChildMeta> = {
+  '1': { level: 'Primary', levelColor: 'bg-blue-100 text-blue-700', yearLabel: 'Year', photo: '/images/shahrul.jpg', LevelIcon: School },
+  '3': { level: 'Secondary', levelColor: 'bg-purple-100 text-purple-700', yearLabel: 'Form', LevelIcon: GraduationCap },
+  '4': { level: 'University', levelColor: 'bg-amber-100 text-amber-700', yearLabel: 'Semester', LevelIcon: Building },
+};
+
+const allExamResults: Record<string, ExamEntry[]> = {
+  '1': [
+    {
+      year: 5, semester: 1, examName: 'Peperiksaan Pertengahan Tahun', examDate: '2024-05', class: '5 Cemerlang',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 82, grade: 'A' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 71, grade: 'B+' },
+        { code: 'MT', name: 'Matematik', mark: 88, grade: 'A' },
+        { code: 'SC', name: 'Sains', mark: 79, grade: 'B+' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 91, grade: 'A+' },
+        { code: 'SE', name: 'Sejarah', mark: 74, grade: 'B+' },
+      ],
+    },
+    {
+      year: 4, semester: 2, examName: 'Peperiksaan Akhir Tahun', examDate: '2023-11', class: '4 Bestari',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 78, grade: 'B+' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 68, grade: 'B' },
+        { code: 'MT', name: 'Matematik', mark: 85, grade: 'A' },
+        { code: 'SC', name: 'Sains', mark: 76, grade: 'B+' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 88, grade: 'A' },
+        { code: 'SE', name: 'Sejarah', mark: 70, grade: 'B+' },
+      ],
+    },
+    {
+      year: 4, semester: 1, examName: 'Peperiksaan Pertengahan Tahun', examDate: '2023-05', class: '4 Bestari',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 75, grade: 'B+' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 62, grade: 'B' },
+        { code: 'MT', name: 'Matematik', mark: 80, grade: 'A' },
+        { code: 'SC', name: 'Sains', mark: 72, grade: 'B+' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 85, grade: 'A' },
+        { code: 'SE', name: 'Sejarah', mark: 65, grade: 'B' },
+      ],
+    },
+    {
+      year: 3, semester: 2, examName: 'Peperiksaan Akhir Tahun', examDate: '2022-11', class: '3 Amanah',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 70, grade: 'B+' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 58, grade: 'C+' },
+        { code: 'MT', name: 'Matematik', mark: 77, grade: 'B+' },
+        { code: 'SC', name: 'Sains', mark: 68, grade: 'B' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 82, grade: 'A' },
+        { code: 'SE', name: 'Sejarah', mark: 60, grade: 'B' },
+      ],
+    },
+    {
+      year: 3, semester: 1, examName: 'Peperiksaan Pertengahan Tahun', examDate: '2022-05', class: '3 Amanah',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 65, grade: 'B' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 55, grade: 'C+' },
+        { code: 'MT', name: 'Matematik', mark: 72, grade: 'B+' },
+        { code: 'SC', name: 'Sains', mark: 64, grade: 'B' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 78, grade: 'B+' },
+        { code: 'SE', name: 'Sejarah', mark: 58, grade: 'C+' },
+      ],
+    },
+  ],
+  '3': [
+    {
+      year: 2, semester: 1, examName: 'Peperiksaan Pertengahan Tahun', examDate: '2024-05', class: '2 Cendekia',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 70, grade: 'B+' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 65, grade: 'B' },
+        { code: 'MT', name: 'Matematik', mark: 78, grade: 'B+' },
+        { code: 'SC', name: 'Sains', mark: 72, grade: 'B+' },
+        { code: 'SE', name: 'Sejarah', mark: 68, grade: 'B' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 85, grade: 'A' },
+        { code: 'GE', name: 'Geografi', mark: 66, grade: 'B' },
+      ],
+    },
+    {
+      year: 1, semester: 2, examName: 'Peperiksaan Akhir Tahun', examDate: '2023-11', class: '1 Bestari',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 65, grade: 'B' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 60, grade: 'B' },
+        { code: 'MT', name: 'Matematik', mark: 72, grade: 'B+' },
+        { code: 'SC', name: 'Sains', mark: 68, grade: 'B' },
+        { code: 'SE', name: 'Sejarah', mark: 62, grade: 'B' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 80, grade: 'A' },
+        { code: 'GE', name: 'Geografi', mark: 60, grade: 'B' },
+      ],
+    },
+    {
+      year: 1, semester: 1, examName: 'Peperiksaan Pertengahan Tahun', examDate: '2023-05', class: '1 Bestari',
+      subjects: [
+        { code: 'BM', name: 'Bahasa Melayu', mark: 60, grade: 'B' },
+        { code: 'BI', name: 'Bahasa Inggeris', mark: 55, grade: 'C+' },
+        { code: 'MT', name: 'Matematik', mark: 68, grade: 'B' },
+        { code: 'SC', name: 'Sains', mark: 64, grade: 'B' },
+        { code: 'SE', name: 'Sejarah', mark: 58, grade: 'C+' },
+        { code: 'PI', name: 'Pendidikan Islam', mark: 76, grade: 'B+' },
+        { code: 'GE', name: 'Geografi', mark: 56, grade: 'C+' },
+      ],
+    },
+  ],
+  '4': [
+    {
+      year: 3, semester: 1, examName: 'Peperiksaan Akhir Semester', examDate: '2024-05', class: 'Diploma Pengajian Islam',
+      subjects: [
+        { code: 'DPI301', name: 'Islamic Finance', mark: 78, grade: 'B+' },
+        { code: 'DPI302', name: 'Business Management', mark: 85, grade: 'A' },
+        { code: 'DPI303', name: 'Computer Applications', mark: 72, grade: 'B+' },
+        { code: 'DPI304', name: 'Arabic Language III', mark: 80, grade: 'A' },
+        { code: 'DPI305', name: 'Statistics', mark: 68, grade: 'B' },
+      ],
+    },
+    {
+      year: 2, semester: 1, examName: 'Peperiksaan Akhir Semester', examDate: '2023-11', class: 'Diploma Pengajian Islam',
+      subjects: [
+        { code: 'DPI201', name: 'Fiqh Muamalat', mark: 75, grade: 'B+' },
+        { code: 'DPI202', name: 'Islamic History', mark: 82, grade: 'A' },
+        { code: 'DPI203', name: 'English II', mark: 65, grade: 'B' },
+        { code: 'DPI204', name: 'Fundamentals of Accounting', mark: 70, grade: 'B+' },
+        { code: 'DPI205', name: 'Arabic Language II', mark: 76, grade: 'B+' },
+      ],
+    },
+    {
+      year: 1, semester: 1, examName: 'Peperiksaan Akhir Semester', examDate: '2023-05', class: 'Diploma Pengajian Islam',
+      subjects: [
+        { code: 'DPI101', name: 'Introduction to Islamic Studies', mark: 80, grade: 'A' },
+        { code: 'DPI102', name: 'Arabic Language I', mark: 72, grade: 'B+' },
+        { code: 'DPI103', name: 'English I', mark: 60, grade: 'B' },
+        { code: 'DPI104', name: 'Basic Mathematics', mark: 75, grade: 'B+' },
+        { code: 'DPI105', name: 'Malaysian Studies', mark: 78, grade: 'B+' },
+      ],
+    },
+  ],
+};
 
 const getGradeColor = (grade: string) => {
   if (grade === 'A+') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
@@ -113,19 +188,22 @@ const getGradeColor = (grade: string) => {
   return 'bg-red-100 text-red-800 border-red-300';
 };
 
-// Group results by school year
-const resultsByYear = examResults.reduce((acc, exam) => {
-  if (!acc[exam.year]) acc[exam.year] = [];
-  acc[exam.year].push(exam);
-  return acc;
-}, {} as Record<number, typeof examResults>);
-
-// Sort years descending
-const sortedYears = Object.keys(resultsByYear).map(Number).sort((a, b) => b - a);
-
 export default function ParentPortalPage() {
-  const student = mockStudents[0];
+  const guardianId = 'g1'; // demo parent
+  const children = mockStudents.filter(s => s.guardianId === guardianId);
+  const [selectedChildId, setSelectedChildId] = useState(children[0]?.id || '1');
+  const student = children.find(s => s.id === selectedChildId) || children[0];
   const allInvoices = mockInvoices.filter(inv => inv.studentId === student.id);
+  const meta = childrenMeta[student.id] || childrenMeta['1'];
+
+  // Compute exam data for selected child
+  const examResults = allExamResults[student.id] || [];
+  const resultsByYear = examResults.reduce((acc, exam) => {
+    if (!acc[exam.year]) acc[exam.year] = [];
+    acc[exam.year].push(exam);
+    return acc;
+  }, {} as Record<number, ExamEntry[]>);
+  const sortedYears = Object.keys(resultsByYear).map(Number).sort((a, b) => b - a);
 
   const [selectedYear, setSelectedYear] = useState('2024');
   const [paymentDialog, setPaymentDialog] = useState(false);
@@ -138,7 +216,14 @@ export default function ParentPortalPage() {
   const [currentReceipt, setCurrentReceipt] = useState<PaymentReceipt | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [notificationDialog, setNotificationDialog] = useState(false);
-  const [selectedResultYear, setSelectedResultYear] = useState(sortedYears[0]);
+  const [selectedResultYear, setSelectedResultYear] = useState(sortedYears[0] || 0);
+
+  const handleSwitchChild = (childId: string) => {
+    setSelectedChildId(childId);
+    const childResults = allExamResults[childId] || [];
+    const years = [...new Set(childResults.map(r => r.year))].sort((a, b) => b - a);
+    setSelectedResultYear(years[0] || 0);
+  };
 
   // Format currency with thousand separators
   const formatCurrency = (amount: number) => {
@@ -379,20 +464,78 @@ export default function ParentPortalPage() {
         </div>
       </div>
 
+      {/* Child Switcher */}
+      {children.length > 1 && (
+        <Card className="border-gray-200">
+          <CardContent className="py-3">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-500 shrink-0">
+                <Users className="h-4 w-4" />
+                <span>Your Children</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto">
+                {children.map(child => {
+                  const childMeta = childrenMeta[child.id];
+                  const isActive = child.id === selectedChildId;
+                  const ChildIcon = childMeta?.LevelIcon || School;
+                  return (
+                    <button
+                      key={child.id}
+                      onClick={() => handleSwitchChild(child.id)}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border transition-all cursor-pointer shrink-0 ${
+                        isActive
+                          ? 'border-blue-500 bg-blue-50 shadow-sm'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold ${
+                        isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                      }`}>
+                        {child.name.charAt(0)}
+                      </div>
+                      <div className="text-left">
+                        <p className={`text-sm font-semibold ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
+                          {child.name}
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <ChildIcon className="h-3 w-3 text-gray-400" />
+                          <span className="text-xs text-gray-500">{child.centre.name}</span>
+                        </div>
+                      </div>
+                      {childMeta && (
+                        <Badge className={`${childMeta.levelColor} text-[10px] px-1.5 py-0 shrink-0`}>
+                          {childMeta.level}
+                        </Badge>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                <Image
-                  src="/images/shahrul.jpg"
-                  alt={student.name}
-                  width={64}
-                  height={64}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
-              </div>
+              {meta.photo ? (
+                <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                  <Image
+                    src={meta.photo}
+                    alt={student.name}
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="h-16 w-16 rounded-full border-2 border-white shadow-sm bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
+                  {student.name.charAt(0)}
+                </div>
+              )}
               <div className="flex items-center gap-8">
                 <div>
                   <p className="text-lg font-bold">{student.name}</p>
@@ -1245,7 +1388,7 @@ export default function ParentPortalPage() {
                     <Award className="h-5 w-5" />
                     Exam Results
                   </CardTitle>
-                  <CardDescription>Academic performance sorted by school year and semester</CardDescription>
+                  <CardDescription>{student.name}&apos;s academic performance</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -1263,12 +1406,12 @@ export default function ParentPortalPage() {
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">
                       <p className="text-sm text-gray-600">Latest Average</p>
                       <p className="text-3xl font-bold text-blue-700">{latestAvg}%</p>
-                      <p className="text-xs text-gray-500">Year {latest.year} Sem {latest.semester}</p>
+                      <p className="text-xs text-gray-500">{meta.yearLabel} {latest.year} Sem {latest.semester}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
                       <p className="text-sm text-gray-600">Previous Average</p>
                       <p className="text-3xl font-bold text-gray-700">{prevAvg}%</p>
-                      <p className="text-xs text-gray-500">Year {previous.year} Sem {previous.semester}</p>
+                      <p className="text-xs text-gray-500">{meta.yearLabel} {previous.year} Sem {previous.semester}</p>
                     </div>
                     <div className={`p-4 rounded-lg border text-center ${diff > 0 ? 'bg-green-50 border-green-200' : diff < 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
                       <p className="text-sm text-gray-600">Trend</p>
@@ -1287,50 +1430,77 @@ export default function ParentPortalPage() {
           </Card>
 
           {/* AI Analysis */}
+          {examResults.length >= 2 && (
           <Card className="border-purple-200 bg-gradient-to-br from-purple-50/50 to-indigo-50/50">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="h-4 w-4 text-purple-600" />
                 AI Performance Analysis
               </CardTitle>
-              <CardDescription>Powered by AI — based on overall exam history</CardDescription>
+              <CardDescription>Powered by AI — based on {student.name}&apos;s exam history</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
-                  <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-green-800">Consistent Upward Trend</p>
-                    <p className="text-xs text-green-700 mt-0.5">Ahmad shows steady improvement across all semesters. Overall average has increased from 65% (Year 3 Sem 1) to 81% (Year 5 Sem 1), a <span className="font-bold">+16% growth</span> over 3 years.</p>
-                  </div>
-                </div>
+              {(() => {
+                const first = examResults[examResults.length - 1];
+                const last = examResults[0];
+                const firstAvg = Math.round(first.subjects.reduce((s, sub) => s + sub.mark, 0) / first.subjects.length);
+                const lastAvg = Math.round(last.subjects.reduce((s, sub) => s + sub.mark, 0) / last.subjects.length);
+                const growth = lastAvg - firstAvg;
 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <BookOpen className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-800">Strongest Subject: Pendidikan Islam</p>
-                    <p className="text-xs text-blue-700 mt-0.5">Consistently scores A or A+ across all semesters (78% to 91%). This subject anchors the overall performance. Matematik is also a strong suit with steady A grades.</p>
-                  </div>
-                </div>
+                // Find strongest and weakest subjects across all exams
+                const subjectAvgs: Record<string, { name: string; total: number; count: number }> = {};
+                examResults.forEach(exam => {
+                  exam.subjects.forEach(sub => {
+                    if (!subjectAvgs[sub.code]) subjectAvgs[sub.code] = { name: sub.name, total: 0, count: 0 };
+                    subjectAvgs[sub.code].total += sub.mark;
+                    subjectAvgs[sub.code].count++;
+                  });
+                });
+                const ranked = Object.entries(subjectAvgs)
+                  .map(([code, data]) => ({ code, name: data.name, avg: Math.round(data.total / data.count) }))
+                  .sort((a, b) => b.avg - a.avg);
+                const strongest = ranked[0];
+                const weakest = ranked[ranked.length - 1];
 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
-                  <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-orange-800">Focus Area: Bahasa Inggeris</p>
-                    <p className="text-xs text-orange-700 mt-0.5">English has been the weakest subject since Year 3 (55% → 71%). While improving, it still lags behind other subjects by ~10 marks. Consider extra tuition or reading programmes to close the gap.</p>
-                  </div>
-                </div>
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-green-50 border border-green-200">
+                      <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">{growth > 0 ? 'Consistent Upward Trend' : growth === 0 ? 'Stable Performance' : 'Needs Attention'}</p>
+                        <p className="text-xs text-green-700 mt-0.5">{student.name.split(' ')[0]} has {growth > 0 ? 'improved' : 'maintained'} performance. Overall average {growth > 0 ? `increased from ${firstAvg}% to ${lastAvg}%` : `stands at ${lastAvg}%`}, a <span className="font-bold">{growth > 0 ? '+' : ''}{growth}% change</span> across {examResults.length} exams.</p>
+                      </div>
+                    </div>
 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
-                  <Sparkles className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-purple-800">Prediction for Year 5 Sem 2</p>
-                    <p className="text-xs text-purple-700 mt-0.5">Based on the current growth trajectory, Ahmad is on track to achieve an overall average of <span className="font-bold">83-86%</span> in the final exam. Maintaining focus on Bahasa Inggeris and Sejarah could push this to 88%+.</p>
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                      <BookOpen className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-blue-800">Strongest Subject: {strongest.name}</p>
+                        <p className="text-xs text-blue-700 mt-0.5">Average of {strongest.avg}% across all exams. This subject anchors the overall performance and shows consistent mastery.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                      <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-orange-800">Focus Area: {weakest.name}</p>
+                        <p className="text-xs text-orange-700 mt-0.5">Average of {weakest.avg}% — the lowest across all subjects. Consider additional practice or tuition to strengthen this area.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-50 border border-purple-200">
+                      <Sparkles className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-purple-800">Outlook</p>
+                        <p className="text-xs text-purple-700 mt-0.5">Based on current trajectory, {student.name.split(' ')[0]} is on track to achieve an overall average of <span className="font-bold">{Math.min(lastAvg + 3, 100)}-{Math.min(lastAvg + 6, 100)}%</span> in the next exam. Focusing on {weakest.name} could push this even higher.</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
             </CardContent>
           </Card>
+          )}
 
           {/* Year Selector + Results */}
           <div className="space-y-4">
@@ -1344,7 +1514,7 @@ export default function ParentPortalPage() {
                     onClick={() => setSelectedResultYear(year)}
                     className="gap-1"
                   >
-                    Year {year}
+                    {meta.yearLabel} {year}
                     {year === sortedYears[0] && (
                       <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">Current</Badge>
                     )}
@@ -1352,11 +1522,11 @@ export default function ParentPortalPage() {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">
-                {resultsByYear[selectedResultYear].length} exam(s)
+                {(resultsByYear[selectedResultYear] || []).length} exam(s)
               </p>
             </div>
 
-            {resultsByYear[selectedResultYear]
+            {(resultsByYear[selectedResultYear] || [])
               .sort((a, b) => b.semester - a.semester)
               .map((exam) => {
                 const avg = Math.round(exam.subjects.reduce((s, sub) => s + sub.mark, 0) / exam.subjects.length);

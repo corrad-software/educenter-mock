@@ -21,13 +21,16 @@ export function ParentHeader() {
           />
           <div className="flex items-center space-x-2">
             <span className="text-xl font-bold text-blue-600">EduCentre</span>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+              Parent
+            </span>
           </div>
         </Link>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <User className="h-4 w-4" />
-            <span>Demo Parent</span>
+            <span>Abdullah Bin Hassan</span>
           </div>
           <Link href="/login">
             <Button variant="outline" size="sm" className="gap-2">
