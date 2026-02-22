@@ -6,9 +6,16 @@ import { useParentMobileStore, guardianChildren } from '@/lib/store/parent-mobil
 import { FeeSummaryCard } from '@/components/mobile/FeeSummaryCard';
 import { StatusBadge } from '@/components/mobile/StatusBadge';
 import { TeacherDashboard } from '@/components/mobile/TeacherDashboard';
-import { MapPin, DollarSign, FileText, CreditCard, Bell, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MapPin, DollarSign, FileText, CreditCard, Bell, AlertCircle, CheckCircle2, ClipboardCheck, Award } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
+
+const CHILD_PHOTOS: Record<string, string> = {
+  '1': '/images/irfan.jpg',
+  '3': '/images/aisyah.jpg',
+  '4': '/images/ahmad.jpg',
+};
 
 const MOCK_NOTIFICATIONS = [
   { id: 'n1', title: 'Payment Reminder', message: 'April fee is due in 5 days', date: '20 Apr 2024', type: 'warning' as const },
@@ -83,26 +90,35 @@ function ParentDashboard() {
 
       {/* Student Info Card — color-coded by child */}
       <div className={`bg-gradient-to-br ${cardColor.gradient} rounded-xl p-4 text-white`}>
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-base font-bold">{child.name}</h2>
-            <p className="text-[11px] text-white/70 font-mono">{child.studentCode}</p>
+        <div className="flex items-start gap-3">
+          {CHILD_PHOTOS[child.id] && (
+            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-2 ring-white/30">
+              <Image src={CHILD_PHOTOS[child.id]} alt={child.name} width={56} height={56} className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-base font-bold">{child.name}</h2>
+                <p className="text-[11px] text-white/70 font-mono">{child.studentCode}</p>
+              </div>
+              <StatusBadge status={child.status} />
+            </div>
+            <div className="mt-1.5 flex items-center gap-1 text-xs text-white/80">
+              <MapPin className="h-3 w-3" />
+              <span>{child.centre.name}</span>
+            </div>
+            <div className="mt-1.5 flex items-center gap-3">
+              <div className="flex items-center gap-1 text-sm">
+                <DollarSign className="h-3.5 w-3.5 text-white/70" />
+                <span className="font-semibold">RM {child.monthlyFee.toLocaleString()}</span>
+                <span className="text-xs text-white/60">/mo</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${cardColor.badge}`}>
+                {subsidyLabel[child.subsidyCategory] ?? child.subsidyCategory}
+              </span>
+            </div>
           </div>
-          <StatusBadge status={child.status} />
-        </div>
-        <div className="mt-2 flex items-center gap-1 text-xs text-white/80">
-          <MapPin className="h-3 w-3" />
-          <span>{child.centre.name}</span>
-        </div>
-        <div className="mt-2 flex items-center gap-3">
-          <div className="flex items-center gap-1 text-sm">
-            <DollarSign className="h-3.5 w-3.5 text-white/70" />
-            <span className="font-semibold">RM {child.monthlyFee.toLocaleString()}</span>
-            <span className="text-xs text-white/60">/mo</span>
-          </div>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${cardColor.badge}`}>
-            {subsidyLabel[child.subsidyCategory] ?? child.subsidyCategory}
-          </span>
         </div>
       </div>
 
@@ -125,19 +141,43 @@ function ParentDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions — colorful cards */}
+      {/* Quick Actions — 2x2 colorful grid */}
       <div>
         <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Quick Actions</p>
         <div className="grid grid-cols-2 gap-2">
           <Link
-            href="/m/invoices"
+            href="/m/attendance-parent"
+            className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-100 p-4 flex items-center gap-3 active:from-purple-100 active:to-violet-100 transition-colors"
+          >
+            <div className="p-2 rounded-lg bg-purple-100">
+              <ClipboardCheck className="h-4 w-4 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-purple-900">Attendance</p>
+              <p className="text-[10px] text-purple-600">View records</p>
+            </div>
+          </Link>
+          <Link
+            href="/m/results"
+            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-100 p-4 flex items-center gap-3 active:from-amber-100 active:to-orange-100 transition-colors"
+          >
+            <div className="p-2 rounded-lg bg-amber-100">
+              <Award className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Results</p>
+              <p className="text-[10px] text-amber-600">Exam scores</p>
+            </div>
+          </Link>
+          <Link
+            href="/m/fees"
             className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4 flex items-center gap-3 active:from-blue-100 active:to-indigo-100 transition-colors"
           >
             <div className="p-2 rounded-lg bg-blue-100">
               <FileText className="h-4 w-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-blue-900">Invoices</p>
+              <p className="text-sm font-semibold text-blue-900">Fees</p>
               <p className="text-[10px] text-blue-600">{unpaidCount > 0 ? `${unpaidCount} pending` : 'All paid'}</p>
             </div>
           </Link>

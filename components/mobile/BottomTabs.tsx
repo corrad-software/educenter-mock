@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, CreditCard, Bell, Calendar, ClipboardCheck } from 'lucide-react';
+import { Home, Bell, Calendar, ClipboardCheck, DollarSign, Award } from 'lucide-react';
 import { useParentMobileStore } from '@/lib/store/parent-mobile-store';
 
 const PARENT_TABS = [
   { href: '/m', label: 'Home', Icon: Home },
-  { href: '/m/invoices', label: 'Invoices', Icon: FileText },
-  { href: '/m/payments', label: 'Payments', Icon: CreditCard },
+  { href: '/m/attendance-parent', label: 'Attend', Icon: ClipboardCheck },
+  { href: '/m/results', label: 'Results', Icon: Award },
+  { href: '/m/fees', label: 'Fees', Icon: DollarSign },
   { href: '/m/notifications', label: 'Alerts', Icon: Bell },
 ];
 
