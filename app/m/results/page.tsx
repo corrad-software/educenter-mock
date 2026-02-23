@@ -183,133 +183,159 @@ export default function MobileResultsPage() {
   const avgTrend = prevAvg !== null ? latestAvg - prevAvg : null;
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      <div>
-        <h1 className="text-lg font-bold text-gray-900">Exam Results</h1>
-        <p className="text-xs text-gray-500">{child?.name ?? 'Student'} · {meta.yearLabel} {latestExam?.year ?? ''}</p>
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="sticky top-0 z-30 bg-gray-50/90 backdrop-blur-md pt-5 pb-3 px-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border-b border-gray-200/50">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 leading-none mb-1">Exam Results</h1>
+        <p className="text-[14px] text-slate-500 font-medium">{child?.name ?? 'Student'} · {meta.yearLabel} {latestExam?.year ?? ''}</p>
       </div>
 
-      {exams.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <Award className="h-10 w-10 mx-auto mb-2" />
-          <p className="text-sm">No exam results available</p>
-        </div>
-      ) : (
-        <>
-          {/* Average Score Banner */}
-          <div className={`rounded-xl p-4 text-center ${
-            latestAvg >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-            latestAvg >= 60 ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
-            'bg-gradient-to-r from-amber-500 to-orange-500'
-          } text-white`}>
-            <p className="text-3xl font-bold">{latestAvg.toFixed(1)}</p>
-            <p className="text-sm opacity-90">Latest Average</p>
-            {avgTrend !== null && (
-              <div className={`flex items-center justify-center gap-1 mt-1 text-sm ${avgTrend >= 0 ? 'text-green-200' : 'text-red-200'}`}>
-                {avgTrend >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                <span>{avgTrend >= 0 ? '+' : ''}{avgTrend.toFixed(1)} from previous</span>
-              </div>
-            )}
-          </div>
+      <div className="flex-1 px-4 py-4 space-y-5">
 
-          {/* Latest Exam — Always Expanded */}
-          <div>
-            <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Latest Result</p>
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="p-4 border-b border-gray-100">
-                <p className="text-sm font-semibold text-gray-900">{latestExam.examName}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{latestExam.class} · {latestExam.examDate}</p>
+        {exams.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <Award className="h-10 w-10 mx-auto mb-2" />
+            <p className="text-sm">No exam results available</p>
+          </div>
+        ) : (
+          <>
+            {/* Average Score Banner */}
+            <div className={`rounded-3xl p-5 text-center shadow-lg shadow-black/5 relative overflow-hidden ${latestAvg >= 80 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+              latestAvg >= 60 ? 'bg-gradient-to-br from-blue-500 to-indigo-600' :
+                'bg-gradient-to-br from-amber-500 to-orange-500'
+              } text-white`}>
+              {/* decorative circles */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10 pointer-events-none" />
+
+              <div className="relative z-10">
+                <p className="text-[40px] font-black tracking-tight leading-none mb-1">{latestAvg.toFixed(1)}</p>
+                <p className="text-[12px] font-bold tracking-widest uppercase opacity-90">Latest Average</p>
+                {avgTrend !== null && (
+                  <div className={`inline-flex items-center justify-center gap-1 mt-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-black/10 backdrop-blur-sm ${avgTrend >= 0 ? 'text-green-50' : 'text-red-50'}`}>
+                    {avgTrend >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    <span>{avgTrend >= 0 ? '+' : ''}{avgTrend.toFixed(1)} from previous</span>
+                  </div>
+                )}
               </div>
-              <div className="p-3">
-                <div className="space-y-2">
-                  {latestExam.subjects.map((subj) => {
-                    // Find same subject in previous exam for trend
-                    const prevSubj = prevExam?.subjects.find(s => s.code === subj.code);
-                    const markDiff = prevSubj ? subj.mark - prevSubj.mark : null;
+            </div>
+
+            {/* Latest Exam — Always Expanded */}
+            <div>
+              <h3 className="text-[13px] font-bold text-slate-800 tracking-tight mb-3 px-1">Latest Result</h3>
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 bg-slate-50/50 border-b border-gray-100">
+                  <p className="text-[15px] font-bold text-slate-900">{latestExam.examName}</p>
+                  <p className="text-[12px] font-medium text-slate-500 mt-0.5">{latestExam.class} · {latestExam.examDate}</p>
+                </div>
+                <div className="p-2">
+                  <div className="space-y-1">
+                    {latestExam.subjects.map((subj) => {
+                      const prevSubj = prevExam?.subjects.find(s => s.code === subj.code);
+                      const markDiff = prevSubj ? subj.mark - prevSubj.mark : null;
+                      return (
+                        <div key={subj.code} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                            <span className="text-[10px] font-black text-slate-500 tracking-widest">{subj.code.substring(0, 3)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0 pr-2">
+                            <span className="text-[14px] font-bold text-slate-800 block truncate">{subj.name}</span>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-[16px] font-black text-slate-900">{subj.mark}</span>
+                              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${getGradeColor(subj.grade)}`}>
+                                {subj.grade}
+                              </span>
+                            </div>
+                            {markDiff !== null && (
+                              <span className={`text-[10px] font-bold mt-0.5 ${markDiff > 0 ? 'text-green-600' : markDiff < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                                {markDiff > 0 ? `+${markDiff}` : markDiff === 0 ? '—' : markDiff}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Past Exams — Collapsible */}
+            {exams.length > 1 && (
+              <div className="pb-8">
+                <h3 className="text-[13px] font-bold text-slate-800 tracking-tight mb-3 px-1">Past Exams</h3>
+                <div className="space-y-3">
+                  {exams.slice(1).map((exam, idx) => {
+                    const avg = getAverage(exam.subjects);
+                    const isExpanded = expandedIdx === idx;
+                    const olderExam = exams[idx + 2] ?? null;
+
                     return (
-                      <div key={subj.code} className="flex items-center gap-2 px-1">
-                        <span className="text-xs text-gray-500 w-8 shrink-0 font-mono">{subj.code}</span>
-                        <span className="text-xs text-gray-700 flex-1 truncate">{subj.name}</span>
-                        <span className="text-sm font-semibold text-gray-900 w-8 text-right">{subj.mark}</span>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getGradeColor(subj.grade)}`}>
-                          {subj.grade}
-                        </span>
-                        {markDiff !== null && (
-                          <span className={`text-[10px] w-8 text-right ${markDiff > 0 ? 'text-green-600' : markDiff < 0 ? 'text-red-500' : 'text-gray-400'}`}>
-                            {markDiff > 0 ? `+${markDiff}` : markDiff === 0 ? '—' : markDiff}
-                          </span>
+                      <div key={idx} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300">
+                        <button
+                          onClick={() => setExpandedIdx(isExpanded ? null : idx)}
+                          className="w-full p-4 flex items-center justify-between text-left active:bg-slate-50 no-tap-highlight"
+                        >
+                          <div>
+                            <p className="text-[15px] font-bold text-slate-900">{exam.examName}</p>
+                            <p className="text-[12px] font-medium text-slate-500 mt-0.5">{exam.class} · Avg: {avg.toFixed(1)}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[12px] font-black tracking-tight px-2.5 py-1 rounded-lg ${avg >= 80 ? 'bg-green-100 text-green-700' :
+                              avg >= 60 ? 'bg-blue-100 text-blue-700' :
+                                'bg-amber-100 text-amber-700'
+                              }`}>
+                              {avg.toFixed(0)}
+                            </span>
+                            <div className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                              <ChevronDown className="h-4 w-4 text-slate-400" />
+                            </div>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="border-t border-gray-100 p-2 bg-slate-50/30">
+                            <div className="space-y-1">
+                              {exam.subjects.map((subj) => {
+                                const olderSubj = olderExam?.subjects.find(s => s.code === subj.code);
+                                const markDiff = olderSubj ? subj.mark - olderSubj.mark : null;
+                                return (
+                                  <div key={subj.code} className="flex items-center gap-2 p-2 rounded-xl">
+                                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center shrink-0">
+                                      <span className="text-[10px] font-black text-slate-500 tracking-widest">{subj.code.substring(0, 3)}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0 pr-2">
+                                      <span className="text-[14px] font-bold text-slate-800 block truncate">{subj.name}</span>
+                                    </div>
+                                    <div className="flex flex-col items-end shrink-0">
+                                      <div className="flex items-baseline gap-1.5">
+                                        <span className="text-[16px] font-black text-slate-900">{subj.mark}</span>
+                                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${getGradeColor(subj.grade)}`}>
+                                          {subj.grade}
+                                        </span>
+                                      </div>
+                                      {markDiff !== null && (
+                                        <span className={`text-[10px] font-bold mt-0.5 ${markDiff > 0 ? 'text-green-600' : markDiff < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                                          {markDiff > 0 ? `+${markDiff}` : markDiff === 0 ? '—' : markDiff}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Past Exams — Collapsible */}
-          {exams.length > 1 && (
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Past Exams</p>
-              <div className="space-y-2">
-                {exams.slice(1).map((exam, idx) => {
-                  const avg = getAverage(exam.subjects);
-                  const isExpanded = expandedIdx === idx;
-                  // Get previous exam for this one (the exam after it in the array, since they're sorted newest first)
-                  const olderExam = exams[idx + 2] ?? null;
-
-                  return (
-                    <div key={idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      <button
-                        onClick={() => setExpandedIdx(isExpanded ? null : idx)}
-                        className="w-full p-4 flex items-center justify-between text-left active:bg-gray-50"
-                      >
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{exam.examName}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{exam.class} · Avg: {avg.toFixed(1)}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-bold px-2 py-1 rounded ${
-                            avg >= 80 ? 'bg-green-100 text-green-700' :
-                            avg >= 60 ? 'bg-blue-100 text-blue-700' :
-                            'bg-amber-100 text-amber-700'
-                          }`}>
-                            {avg.toFixed(0)}
-                          </span>
-                          {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
-                        </div>
-                      </button>
-                      {isExpanded && (
-                        <div className="border-t border-gray-100 p-3 space-y-2">
-                          {exam.subjects.map((subj) => {
-                            const olderSubj = olderExam?.subjects.find(s => s.code === subj.code);
-                            const markDiff = olderSubj ? subj.mark - olderSubj.mark : null;
-                            return (
-                              <div key={subj.code} className="flex items-center gap-2 px-1">
-                                <span className="text-xs text-gray-500 w-8 shrink-0 font-mono">{subj.code}</span>
-                                <span className="text-xs text-gray-700 flex-1 truncate">{subj.name}</span>
-                                <span className="text-sm font-semibold text-gray-900 w-8 text-right">{subj.mark}</span>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${getGradeColor(subj.grade)}`}>
-                                  {subj.grade}
-                                </span>
-                                {markDiff !== null && (
-                                  <span className={`text-[10px] w-8 text-right ${markDiff > 0 ? 'text-green-600' : markDiff < 0 ? 'text-red-500' : 'text-gray-400'}`}>
-                                    {markDiff > 0 ? `+${markDiff}` : markDiff === 0 ? '—' : markDiff}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

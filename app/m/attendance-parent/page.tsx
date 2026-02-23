@@ -129,129 +129,148 @@ export default function MobileAttendanceParentPage() {
   );
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      <div>
-        <h1 className="text-lg font-bold text-gray-900">Attendance</h1>
-        <p className="text-xs text-gray-500">{child?.name ?? 'Student'}</p>
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="sticky top-0 z-30 bg-gray-50/90 backdrop-blur-md pt-5 pb-3 px-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border-b border-gray-200/50">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 leading-none mb-1">Attendance</h1>
+        <p className="text-[14px] text-slate-500 font-medium">{child?.name ?? 'Student'}</p>
       </div>
 
-      {/* Attendance Rate Banner */}
-      <div className={`rounded-xl p-3 flex items-center justify-between ${
-        attendanceRate >= 90 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-        attendanceRate >= 75 ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
-        'bg-gradient-to-r from-red-500 to-rose-600'
-      } text-white`}>
-        <div>
-          <p className="text-2xl font-bold">{attendanceRate}%</p>
-          <p className="text-xs opacity-80">Attendance Rate</p>
-        </div>
-        <div className="grid grid-cols-4 gap-3 text-center">
-          {(['present', 'late', 'absent', 'excused'] as const).map(status => (
-            <div key={status}>
-              <p className="text-lg font-bold">{stats[status]}</p>
-              <p className="text-[9px] opacity-80">{STATUS_LABEL[status].text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="flex-1 px-4 py-4 space-y-5">
 
-      {/* Calendar */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {/* Month Navigator */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 rounded-lg active:bg-gray-100">
-            <ChevronLeft className="h-5 w-5 text-gray-600" />
-          </button>
-          <span className="text-sm font-semibold text-gray-900">{format(currentMonth, 'MMMM yyyy')}</span>
-          <button
-            onClick={() => canGoForward && setCurrentMonth(addMonths(currentMonth, 1))}
-            className={`p-1 rounded-lg ${canGoForward ? 'active:bg-gray-100' : 'opacity-30'}`}
-            disabled={!canGoForward}
-          >
-            <ChevronRight className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
+        {/* Attendance Rate Banner */}
+        <div className={`rounded-3xl p-5 shadow-lg shadow-black/5 relative overflow-hidden flex items-center justify-between ${attendanceRate >= 90 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+          attendanceRate >= 75 ? 'bg-gradient-to-br from-amber-500 to-orange-500' :
+            'bg-gradient-to-br from-red-500 to-rose-600'
+          } text-white`}>
+          {/* decorative circles */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10 pointer-events-none" />
 
-        {/* Day headers */}
-        <div className="grid grid-cols-7 text-center px-2 pt-2">
-          {DAY_HEADERS.map((d, i) => (
-            <div key={i} className="text-[10px] font-medium text-gray-400 py-1">{d}</div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div className="grid grid-cols-7 text-center px-2 pb-3">
-          {calendarDays.map((day, i) => {
-            const inMonth = isSameMonth(day, currentMonth);
-            const isToday = isSameDay(day, new Date());
-            const key = format(day, 'yyyy-MM-dd');
-            const record = recordMap.get(key);
-            const isWeekend = getDay(day) === 0 || getDay(day) === 6;
-
-            return (
-              <div key={i} className="py-1 flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs relative ${
-                  !inMonth ? 'text-gray-200' :
-                  isToday ? 'bg-gray-900 text-white font-bold' :
-                  isWeekend ? 'text-gray-300' :
-                  'text-gray-700'
-                }`}>
-                  {day.getDate()}
-                  {record && inMonth && (
-                    <span className={`absolute -bottom-0.5 w-1.5 h-1.5 rounded-full ${STATUS_DOT[record.status]}`} />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-4 px-4 pb-3 pt-1 border-t border-gray-50">
-          {(['present', 'late', 'absent', 'excused'] as const).map(status => (
-            <div key={status} className="flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${STATUS_DOT[status]}`} />
-              <span className="text-[9px] text-gray-500">{STATUS_LABEL[status].text}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Compact Daily Log */}
-      <div>
-        <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Daily Log</p>
-        {sortedRecords.length === 0 ? (
-          <div className="text-center py-6 text-gray-400">
-            <p className="text-sm">No records for this month</p>
+          <div className="relative z-10">
+            <p className="text-[40px] font-black tracking-tight leading-none mb-1">{attendanceRate}%</p>
+            <p className="text-[12px] font-bold tracking-widest uppercase opacity-90">Attendance Rate</p>
           </div>
-        ) : (
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-            {sortedRecords.map((record, i) => {
-              const label = STATUS_LABEL[record.status];
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-right relative z-10">
+            <div className="flex flex-col items-end">
+              <p className="text-[18px] font-black leading-none mb-0.5">{stats['present']}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase opacity-80">{STATUS_LABEL['present'].text}</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <p className="text-[18px] font-black leading-none mb-0.5">{stats['absent']}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase opacity-80">{STATUS_LABEL['absent'].text}</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <p className="text-[18px] font-black leading-none mb-0.5">{stats['late']}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase opacity-80">{STATUS_LABEL['late'].text}</p>
+            </div>
+            <div className="flex flex-col items-end">
+              <p className="text-[18px] font-black leading-none mb-0.5">{stats['excused']}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase opacity-80">{STATUS_LABEL['excused'].text}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Calendar */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden pb-1">
+          {/* Month Navigator */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50/80 bg-slate-50/30">
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center active:bg-gray-50 transition-colors shadow-sm">
+              <ChevronLeft className="h-5 w-5 text-gray-600 pr-0.5" />
+            </button>
+            <span className="text-[16px] font-black text-slate-800 tracking-tight">{format(currentMonth, 'MMMM yyyy')}</span>
+            <button
+              onClick={() => canGoForward && setCurrentMonth(addMonths(currentMonth, 1))}
+              className={`w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center transition-colors shadow-sm ${canGoForward ? 'active:bg-gray-50' : 'opacity-40'}`}
+              disabled={!canGoForward}
+            >
+              <ChevronRight className="h-5 w-5 text-gray-600 pl-0.5" />
+            </button>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 text-center px-3 pt-4">
+            {DAY_HEADERS.map((d, i) => (
+              <div key={i} className="text-[11px] font-black tracking-widest text-slate-400 py-1 uppercase">{d}</div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-y-1.5 text-center px-3 py-3">
+            {calendarDays.map((day, i) => {
+              const inMonth = isSameMonth(day, currentMonth);
+              const isToday = isSameDay(day, new Date());
+              const key = format(day, 'yyyy-MM-dd');
+              const record = recordMap.get(key);
+              const isWeekend = getDay(day) === 0 || getDay(day) === 6;
+
               return (
-                <div key={i} className="flex items-center px-3 py-2 gap-2">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${STATUS_DOT[record.status]}`} />
-                  <span className="text-xs text-gray-500 w-16 shrink-0">{format(record.date, 'dd MMM')}</span>
-                  <span className="text-xs text-gray-400 w-10 shrink-0">{format(record.date, 'EEE')}</span>
-                  <span className={`text-xs font-medium w-14 shrink-0 ${label.color}`}>{label.text}</span>
-                  <span className="text-[10px] text-gray-400 flex-1 text-right truncate">
-                    {record.checkIn && (
-                      <>
-                        {record.checkIn}
-                        {record.checkOut && ` — ${record.checkOut}`}
-                        {record.lateMinutes > 0 && (
-                          <span className="text-amber-600 ml-1">+{record.lateMinutes}m</span>
-                        )}
-                      </>
+                <div key={i} className="py-1 flex flex-col items-center justify-center min-h-[44px]">
+                  <div className={`w-9 h-9 flex flex-col items-center justify-center rounded-2xl relative transition-all ${!inMonth ? 'text-slate-200' :
+                    isToday ? 'bg-slate-900 text-white shadow-md' :
+                      isWeekend ? 'text-slate-300 font-medium' :
+                        'text-slate-700 font-bold'
+                    }`}>
+                    <span className={`text-[15px] ${isToday ? 'font-black' : ''}`}>{day.getDate()}</span>
+                    {record && inMonth && (
+                      <span className={`absolute -bottom-1 w-1.5 h-1.5 rounded-full ring-2 ring-white ${STATUS_DOT[record.status]}`} />
                     )}
-                    {record.status === 'absent' && 'No check-in'}
-                    {record.status === 'excused' && 'Leave'}
-                  </span>
+                  </div>
                 </div>
               );
             })}
           </div>
-        )}
+
+          {/* Legend */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 bg-slate-50/30">
+            {(['present', 'late', 'absent', 'excused'] as const).map(status => (
+              <div key={status} className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${STATUS_DOT[status]}`} />
+                <span className="text-[11px] font-bold text-slate-500 hidden sm:inline-block">{STATUS_LABEL[status].text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Compact Daily Log */}
+        <div className="pb-8">
+          <h3 className="text-[13px] font-bold text-slate-800 tracking-tight mb-3 px-1">Daily Log</h3>
+          {sortedRecords.length === 0 ? (
+            <div className="text-center py-6 text-gray-400">
+              <p className="text-[14px] font-medium">No records for this month</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm divide-y divide-gray-50 overflow-hidden">
+              {sortedRecords.map((record, i) => {
+                const label = STATUS_LABEL[record.status];
+                return (
+                  <div key={i} className="flex items-center px-5 py-3.5 gap-3 hover:bg-slate-50 transition-colors">
+                    <div className={`w-10 h-10 rounded-2xl flex flex-col items-center justify-center shrink-0 ${record.status === 'present' ? 'bg-green-50 text-green-700' : record.status === 'late' ? 'bg-amber-50 text-amber-700' : record.status === 'absent' ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`}>
+                      <span className="text-[15px] font-black leading-none">{format(record.date, 'dd')}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest opacity-70 mt-0.5">{format(record.date, 'EEE')}</span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline justify-between mb-0.5">
+                        <span className={`text-[14px] font-bold ${label.color}`}>{label.text}</span>
+                        {record.lateMinutes > 0 && (
+                          <span className="text-[12px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">+{record.lateMinutes}m late</span>
+                        )}
+                      </div>
+                      <span className="text-[13px] font-medium text-slate-500 block truncate">
+                        {record.checkIn ? (
+                          <>
+                            In: <span className="font-bold text-slate-700">{record.checkIn}</span>
+                            {record.checkOut && <> · Out: <span className="font-bold text-slate-700">{record.checkOut}</span></>}
+                          </>
+                        ) : record.status === 'absent' ? 'No check-in recorded' : record.status === 'excused' ? 'Approved Leave' : ''}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

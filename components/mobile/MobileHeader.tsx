@@ -32,22 +32,32 @@ export function MobileHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Image src="/logodsc.png" alt="EduCentre" width={100} height={20} className="h-5 w-auto" />
-          <button
-            onClick={() => setShowPicker(!showPicker)}
-            className={`flex items-center gap-1 text-[10px] ${current.bg} ${current.text} px-2 py-0.5 rounded font-medium active:opacity-80`}
-          >
-            <current.Icon className="h-3 w-3" />
-            {current.label}
-            <ChevronDown className="h-2.5 w-2.5" />
-          </button>
+      <header className="glass px-4 py-3 pb-3 pt-[max(env(safe-area-inset-top,12px),12px)] flex items-center justify-between no-tap-highlight">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-sm relative overflow-hidden">
+            <span className="text-white font-bold text-xs tracking-wider z-10 hidden">EC</span>
+            <Image src="/logodsc.png" alt="EduCentre" width={40} height={40} className="w-full h-full object-cover absolute inset-0 mix-blend-screen opacity-90 p-1" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-[15px] font-bold tracking-tight text-gray-900 leading-none">EduCentre</h1>
+            <button
+              onClick={() => setShowPicker(!showPicker)}
+              className="flex items-center gap-1 mt-0.5 active:opacity-60 transition-opacity"
+            >
+              <span className={`text-[11px] font-bold tracking-wide uppercase ${current.text}`}>
+                {current.label}
+              </span>
+              <ChevronDown className={`h-3 w-3 ${current.text}`} />
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-600 hidden min-[360px]:inline">{guardian?.name}</span>
-          <button onClick={handleLogout} className="p-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors">
-            <LogOut className="h-4 w-4 text-gray-500" />
+          <div className="flex-col items-end hidden min-[360px]:flex">
+            <span className="text-xs font-semibold text-gray-900 leading-none">{guardian?.name?.split(' ')[0] || 'User'}</span>
+            <span className="text-[10px] text-gray-400 font-medium">Profile</span>
+          </div>
+          <button onClick={handleLogout} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center active:scale-95 transition-transform no-tap-highlight shadow-sm border border-gray-200">
+            <LogOut className="h-4 w-4 text-gray-500 ml-0.5" />
           </button>
         </div>
       </header>
@@ -63,9 +73,8 @@ export function MobileHeader() {
                 <button
                   key={id}
                   onClick={() => handleSwitch(id)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 text-left transition-colors ${
-                    isActive ? 'bg-gray-50' : 'active:bg-gray-100'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-3 text-left transition-colors ${isActive ? 'bg-gray-50' : 'active:bg-gray-100'
+                    }`}
                 >
                   <div className={`p-1.5 rounded-lg ${bg}`}>
                     <Icon className={`h-4 w-4 ${text}`} />

@@ -41,10 +41,12 @@ export default function MobileLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50 flex flex-col">
-      <MobileHeader />
-      <ChildTabBar />
-      <main className="flex-1 overflow-y-auto pb-16">
+    <div className="h-dvh w-full bg-gray-50 flex flex-col overflow-hidden text-slate-900">
+      <div className="flex-none z-50">
+        <MobileHeader />
+        <ChildTabBar />
+      </div>
+      <main className="flex-1 overflow-y-auto hide-scrollbar pb-24 relative">
         {children}
       </main>
       <BottomTabs />

@@ -50,26 +50,31 @@ export default function MobileNotificationsPage() {
   const unread = NOTIFICATIONS.filter(n => !n.read).length;
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      <div>
-        <h1 className="text-lg font-bold text-gray-900">Notifications</h1>
-        <p className="text-xs text-gray-500">
-          {unread > 0 ? `${unread} unread notification${unread !== 1 ? 's' : ''}` : 'All caught up'}
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="sticky top-0 z-30 bg-gray-50/90 backdrop-blur-md pt-5 pb-3 px-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border-b border-gray-200/50">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-slate-900 leading-none mb-1">Notifications</h1>
+        <p className="text-[14px] text-slate-500 font-medium">
+          {unread > 0 ? `${unread} unread` : 'All caught up'}
         </p>
       </div>
 
-      {NOTIFICATIONS.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <Bell className="h-10 w-10 mx-auto mb-2" />
-          <p className="text-sm">No notifications</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {NOTIFICATIONS.map((n) => (
-            <NotificationItem key={n.id} notification={n} />
-          ))}
-        </div>
-      )}
+      <div className="flex-1 px-4 py-4 space-y-4 pb-8">
+        {NOTIFICATIONS.length === 0 ? (
+          <div className="text-center py-16 flex flex-col items-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-3">
+              <Bell className="h-6 w-6 text-gray-400" />
+            </div>
+            <p className="text-[15px] font-bold text-slate-700">No notifications</p>
+            <p className="text-[13px] text-slate-500 mt-1">You&apos;re all caught up!</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {NOTIFICATIONS.map((n) => (
+              <NotificationItem key={n.id} notification={n} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

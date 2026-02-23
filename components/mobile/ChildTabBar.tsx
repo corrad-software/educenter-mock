@@ -23,8 +23,8 @@ export function ChildTabBar() {
   if (activeRole !== 'parent') return null;
 
   return (
-    <div className="sticky top-[49px] z-40 bg-white border-b border-gray-200 px-4 py-2">
-      <div className="flex gap-2">
+    <div className="glass border-none no-tap-highlight">
+      <div className="flex gap-3 px-4 py-[10px] overflow-x-auto hide-scrollbar relative">
         {guardianChildren.map((child) => {
           const isActive = child.id === selectedChildId;
           const color = CHILD_COLORS[child.id] ?? DEFAULT_COLOR;
@@ -35,20 +35,18 @@ export function ChildTabBar() {
             <button
               key={child.id}
               onClick={() => selectChild(child.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-sm font-medium transition-all ${
-                isActive
-                  ? `${color.activeBg} ${color.activeText}`
-                  : 'text-gray-400 active:bg-gray-100'
-              }`}
+              className={`flex items-center gap-2 py-1.5 pl-1.5 pr-4 rounded-full text-sm font-semibold transition-all shrink-0 border ${isActive
+                  ? `${color.activeBg} ${color.activeText} border-transparent shadow-sm`
+                  : 'bg-white text-gray-500 border-gray-200 active:bg-gray-50'
+                }`}
             >
-              <span className={`w-6 h-6 rounded-full shrink-0 overflow-hidden ${
-                isActive ? `ring-2 ${color.ring}` : 'opacity-60 grayscale'
-              }`}>
+              <span className={`w-8 h-8 rounded-full shrink-0 overflow-hidden ${isActive ? `ring-2 ring-white shadow-sm` : 'opacity-80 grayscale'
+                }`}>
                 {photo ? (
-                  <Image src={photo} alt={child.name} width={24} height={24} className="w-full h-full object-cover" />
+                  <Image src={photo} alt={child.name} width={32} height={32} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="w-full h-full flex items-center justify-center bg-gray-300 text-[9px] font-bold text-white">
-                    {child.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                  <span className="w-full h-full flex items-center justify-center bg-gray-200 text-[10px] font-bold text-gray-500">
+                    {firstName.substring(0, 2).toUpperCase()}
                   </span>
                 )}
               </span>

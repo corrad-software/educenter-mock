@@ -126,19 +126,29 @@
 }
 
 @layer utilities {
-  .border {
-    border-width: 1px;
+  .border { border-width: 1px; }
+  .border-t { border-top-width: 1px; }
+  .border-b { border-bottom-width: 1px; }
+  .border-l { border-left-width: 1px; }
+  .border-r { border-right-width: 1px; }
+
+  /* Mobile App Specifics */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border-b border-gray-200/50 dark:bg-black/80 dark:border-gray-800/50;
   }
-  .border-t {
-    border-top-width: 1px;
+  .glass-bottom {
+    @apply bg-white/85 backdrop-blur-lg border-t border-gray-200/50 dark:bg-black/85 dark:border-gray-800/50;
   }
-  .border-b {
-    border-bottom-width: 1px;
+  .safe-pb { padding-bottom: env(safe-area-inset-bottom, 16px); }
+  .safe-pt { padding-top: env(safe-area-inset-top, 16px); }
+  .safe-px { 
+    padding-left: max(env(safe-area-inset-left), 1rem); 
+    padding-right: max(env(safe-area-inset-right), 1rem); 
   }
-  .border-l {
-    border-left-width: 1px;
-  }
-  .border-r {
-    border-right-width: 1px;
-  }
+
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  
+  /* Tap highlight removal for native feel */
+  .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
 }

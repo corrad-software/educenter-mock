@@ -25,15 +25,15 @@ const MOCK_NOTIFICATIONS = [
 const NOTIF_STYLES = {
   warning: { bg: 'bg-amber-50 border-amber-100', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
   success: { bg: 'bg-green-50 border-green-100', iconBg: 'bg-green-100', iconColor: 'text-green-600' },
-  info:    { bg: 'bg-blue-50 border-blue-100',   iconBg: 'bg-blue-100',  iconColor: 'text-blue-600' },
+  info: { bg: 'bg-blue-50 border-blue-100', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
 };
 
-const CHILD_CARD_COLORS: Record<string, { gradient: string; badge: string }> = {
-  '1': { gradient: 'from-blue-500 to-blue-600',   badge: 'bg-blue-400/30 text-blue-100' },
-  '3': { gradient: 'from-purple-500 to-purple-600', badge: 'bg-purple-400/30 text-purple-100' },
-  '4': { gradient: 'from-amber-500 to-amber-600',  badge: 'bg-amber-400/30 text-amber-100' },
+const CHILD_CARD_COLORS: Record<string, { gradient: string; badge: string; text: string }> = {
+  '1': { gradient: 'from-[#0A84FF] to-[#0055B3]', badge: 'bg-white/20 text-blue-50', text: 'text-blue-100' },
+  '3': { gradient: 'from-[#BF5AF2] to-[#7A1EAB]', badge: 'bg-white/20 text-purple-50', text: 'text-purple-100' },
+  '4': { gradient: 'from-[#FF9F0A] to-[#C93400]', badge: 'bg-white/20 text-orange-50', text: 'text-orange-100' },
 };
-const DEFAULT_CARD_COLOR = { gradient: 'from-gray-500 to-gray-600', badge: 'bg-gray-400/30 text-gray-100' };
+const DEFAULT_CARD_COLOR = { gradient: 'from-gray-600 to-slate-800', badge: 'bg-white/20 text-gray-100', text: 'text-gray-300' };
 
 export default function MobileDashboard() {
   const { activeRole } = useParentMobileStore();
@@ -81,51 +81,60 @@ function ParentDashboard() {
   const cardColor = CHILD_CARD_COLORS[child.id] ?? DEFAULT_CARD_COLOR;
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      {/* Greeting */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white">
-        <h1 className="text-lg font-bold">Assalamualaikum, {guardian?.name?.split(' ')[0] ?? 'Parent'}</h1>
-        <p className="text-sm text-green-100">{guardianChildren.length} children enrolled</p>
-      </div>
-
+    <div className="px-4 py-5 space-y-6">
       {/* Student Info Card — color-coded by child */}
-      <div className={`bg-gradient-to-br ${cardColor.gradient} rounded-xl p-4 text-white`}>
-        <div className="flex items-start gap-3">
-          {CHILD_PHOTOS[child.id] && (
-            <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-2 ring-white/30">
-              <Image src={CHILD_PHOTOS[child.id]} alt={child.name} width={56} height={56} className="w-full h-full object-cover" />
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
+      <div className={`shadow-[0_8px_30px_rgb(0,0,0,0.12)] bg-gradient-to-br ${cardColor.gradient} rounded-3xl p-5 text-white relative overflow-hidden transition-all duration-300`}>
+        {/* decorative circles */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-xl -ml-10 -mb-10 pointer-events-none" />
+
+        <div className="flex items-start gap-4 relative z-10">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 ring-4 ring-white/20 shadow-sm relative bg-white/10 backdrop-blur-sm flex items-center justify-center">
+            {CHILD_PHOTOS[child.id] ? (
+              <Image src={CHILD_PHOTOS[child.id]} alt={child.name} width={64} height={64} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl font-bold">{child.name.substring(0, 2).toUpperCase()}</span>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0 pt-0.5">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-base font-bold">{child.name}</h2>
-                <p className="text-[11px] text-white/70 font-mono">{child.studentCode}</p>
+                <h2 className="text-[17px] font-bold tracking-tight leading-tight mb-0.5 max-w-[180px] truncate">{child.name}</h2>
+                <p className={`text-[12px] ${cardColor.text} font-mono tracking-wider`}>{child.studentCode}</p>
               </div>
-              <StatusBadge status={child.status} />
             </div>
-            <div className="mt-1.5 flex items-center gap-1 text-xs text-white/80">
-              <MapPin className="h-3 w-3" />
+
+            <div className="mt-3 flex items-center gap-1.5 text-[11px] text-white/95 font-semibold bg-black/10 self-start inline-flex px-2 py-1 rounded-lg backdrop-blur-md">
+              <MapPin className="h-3 w-3 opacity-90" />
               <span>{child.centre.name}</span>
             </div>
-            <div className="mt-1.5 flex items-center gap-3">
-              <div className="flex items-center gap-1 text-sm">
-                <DollarSign className="h-3.5 w-3.5 text-white/70" />
-                <span className="font-semibold">RM {child.monthlyFee.toLocaleString()}</span>
-                <span className="text-xs text-white/60">/mo</span>
-              </div>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${cardColor.badge}`}>
-                {subsidyLabel[child.subsidyCategory] ?? child.subsidyCategory}
-              </span>
+          </div>
+        </div>
+
+        <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between relative z-10">
+          <div className="flex flex-col">
+            <span className={`text-[10px] uppercase tracking-widest font-bold ${cardColor.text}`}>Monthly Fee</span>
+            <div className="flex items-baseline gap-1 mt-0.5">
+              <span className="font-bold text-lg leading-none">RM {child.monthlyFee.toLocaleString()}</span>
             </div>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className={`text-[10px] uppercase tracking-widest font-bold ${cardColor.text}`}>Subsidy</span>
+            <span className={`mt-1 text-[11px] px-2 py-0.5 rounded-md font-bold ${cardColor.badge}`}>
+              {subsidyLabel[child.subsidyCategory] ?? child.subsidyCategory}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Fee Overview — 2 colored cards */}
       <div>
-        <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Fee Overview</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-[13px] font-bold text-slate-800 tracking-tight">Financial Overview</h3>
+          <Link href="/m/fees" className="text-[11px] font-bold text-blue-600 uppercase tracking-widest active:opacity-60">View All</Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           <FeeSummaryCard
             label="Outstanding"
             value={`RM ${totalOutstanding.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`}
@@ -143,65 +152,65 @@ function ParentDashboard() {
 
       {/* Quick Actions — 2x2 colorful grid */}
       <div>
-        <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wide">Quick Actions</p>
-        <div className="grid grid-cols-2 gap-2">
+        <h3 className="text-[13px] font-bold text-slate-800 tracking-tight mb-3 px-1">Quick Actions</h3>
+        <div className="grid grid-cols-2 gap-3">
           <Link
             href="/m/attendance-parent"
-            className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl border border-purple-100 p-4 flex items-center gap-3 active:from-purple-100 active:to-violet-100 transition-colors"
+            className="bg-white rounded-[20px] shadow-sm border border-gray-100/80 p-4 pt-5 flex flex-col items-start gap-4 active:scale-[0.98] active:bg-slate-50 transition-all no-tap-highlight"
           >
-            <div className="p-2 rounded-lg bg-purple-100">
-              <ClipboardCheck className="h-4 w-4 text-purple-600" />
+            <div className="p-2.5 rounded-xl bg-purple-50 ring-1 ring-purple-100 shadow-sm">
+              <ClipboardCheck className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-purple-900">Attendance</p>
-              <p className="text-[10px] text-purple-600">View records</p>
+              <p className="text-[14px] font-bold text-slate-800 leading-none mb-1">Attendance</p>
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide">View records</p>
             </div>
           </Link>
           <Link
             href="/m/results"
-            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-100 p-4 flex items-center gap-3 active:from-amber-100 active:to-orange-100 transition-colors"
+            className="bg-white rounded-[20px] shadow-sm border border-gray-100/80 p-4 pt-5 flex flex-col items-start gap-4 active:scale-[0.98] active:bg-slate-50 transition-all no-tap-highlight"
           >
-            <div className="p-2 rounded-lg bg-amber-100">
-              <Award className="h-4 w-4 text-amber-600" />
+            <div className="p-2.5 rounded-xl bg-orange-50 ring-1 ring-orange-100 shadow-sm">
+              <Award className="h-5 w-5 text-orange-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-amber-900">Results</p>
-              <p className="text-[10px] text-amber-600">Exam scores</p>
+              <p className="text-[14px] font-bold text-slate-800 leading-none mb-1">Results</p>
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide">Exam scores</p>
             </div>
           </Link>
           <Link
             href="/m/fees"
-            className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 p-4 flex items-center gap-3 active:from-blue-100 active:to-indigo-100 transition-colors"
+            className="bg-white rounded-[20px] shadow-sm border border-gray-100/80 p-4 pt-5 flex flex-col items-start gap-4 active:scale-[0.98] active:bg-slate-50 transition-all no-tap-highlight"
           >
-            <div className="p-2 rounded-lg bg-blue-100">
-              <FileText className="h-4 w-4 text-blue-600" />
+            <div className="p-2.5 rounded-xl bg-blue-50 ring-1 ring-blue-100 shadow-sm">
+              <FileText className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-blue-900">Fees</p>
-              <p className="text-[10px] text-blue-600">{unpaidCount > 0 ? `${unpaidCount} pending` : 'All paid'}</p>
+              <p className="text-[14px] font-bold text-slate-800 leading-none mb-1">Fees</p>
+              <p className="text-[11px] text-slate-500 font-medium tracking-wide">{unpaidCount > 0 ? `${unpaidCount} pending` : 'All paid'}</p>
             </div>
           </Link>
           {firstUnpaidInvoice ? (
             <Link
               href={`/m/pay?invoiceId=${firstUnpaidInvoice.id}`}
-              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100 p-4 flex items-center gap-3 active:from-green-100 active:to-emerald-100 transition-colors"
+              className="bg-white rounded-[20px] shadow-sm border border-gray-100/80 p-4 pt-5 flex flex-col items-start gap-4 active:scale-[0.98] active:bg-slate-50 transition-all no-tap-highlight"
             >
-              <div className="p-2 rounded-lg bg-green-100">
-                <CreditCard className="h-4 w-4 text-green-600" />
+              <div className="p-2.5 rounded-xl bg-green-50 ring-1 ring-green-100 shadow-sm">
+                <CreditCard className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-green-900">Pay Now</p>
-                <p className="text-[10px] text-green-600">RM {totalOutstanding.toLocaleString('en-MY', { minimumFractionDigits: 2 })} due</p>
+                <p className="text-[14px] font-bold text-slate-800 leading-none mb-1">Pay Now</p>
+                <p className="text-[11px] text-green-600 font-bold tracking-wide">RM {totalOutstanding.toLocaleString('en-MY', { minimumFractionDigits: 2 })} due</p>
               </div>
             </Link>
           ) : (
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 flex items-center gap-3 opacity-50">
-              <div className="p-2 rounded-lg bg-gray-200">
-                <CreditCard className="h-4 w-4 text-gray-400" />
+            <div className="bg-slate-50/50 rounded-[20px] shadow-sm border border-gray-100 p-4 pt-5 flex flex-col items-start gap-4 opacity-70">
+              <div className="p-2.5 rounded-xl bg-gray-200/50 flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-gray-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-500">Pay Now</p>
-                <p className="text-[10px] text-gray-400">No dues</p>
+                <p className="text-[14px] font-bold text-gray-500 leading-none mb-1">Pay Now</p>
+                <p className="text-[11px] text-gray-400 font-medium tracking-wide">No dues</p>
               </div>
             </div>
           )}
@@ -209,24 +218,26 @@ function ParentDashboard() {
       </div>
 
       {/* Recent Notifications — color-coded */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Recent</p>
-          <Link href="/m/notifications" className="text-xs text-green-600 font-medium">View All</Link>
+      <div className="pb-4">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-[13px] font-bold text-slate-800 tracking-tight">Recent Updates</h3>
+          <Link href="/m/notifications" className="text-[11px] font-bold text-green-600 uppercase tracking-widest active:opacity-60">View All</Link>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {MOCK_NOTIFICATIONS.map((n) => {
             const style = NOTIF_STYLES[n.type] ?? NOTIF_STYLES.info;
             const NotifIcon = n.type === 'warning' ? AlertCircle : n.type === 'success' ? CheckCircle2 : Bell;
             return (
-              <div key={n.id} className={`rounded-lg border px-4 py-3 flex items-start gap-3 ${style.bg}`}>
-                <div className={`p-1.5 rounded-lg mt-0.5 ${style.iconBg}`}>
-                  <NotifIcon className={`h-3.5 w-3.5 ${style.iconColor}`} />
+              <div key={n.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-start gap-3.5">
+                <div className={`p-2 rounded-full mt-0.5 ${style.iconBg} ring-4 ring-white`}>
+                  <NotifIcon className={`h-4 w-4 ${style.iconColor}`} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                  <p className="text-xs text-gray-600 mt-0.5">{n.message}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.date}</p>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex justify-between items-start gap-2">
+                    <p className="text-[14px] font-bold text-slate-800 leading-tight">{n.title}</p>
+                    <span className="text-[10px] font-medium text-slate-400 flex-shrink-0 pt-0.5">{n.date}</span>
+                  </div>
+                  <p className="text-[13px] text-slate-500 mt-1 leading-snug pr-2">{n.message}</p>
                 </div>
               </div>
             );
