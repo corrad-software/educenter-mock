@@ -1,0 +1,100 @@
+import type { StudentHealthProfile, HealthIncidentRecord, VaccinationRecord } from '@/lib/types';
+
+export const healthProfiles: StudentHealthProfile[] = [
+  {
+    studentId: '1',
+    studentName: 'Ahmad Bin Abdullah',
+    bloodType: 'A+',
+    allergies: ['Seafood'],
+    chronicConditions: ['Asthma'],
+    emergencyContact: 'Abdullah Bin Hassan (+60123456789)',
+    lastScreeningDate: '2026-01-15',
+  },
+  {
+    studentId: '2',
+    studentName: 'Fatimah Binti Ismail',
+    bloodType: 'O+',
+    allergies: [],
+    chronicConditions: [],
+    emergencyContact: 'Ismail Bin Ahmad (+60198765432)',
+    lastScreeningDate: '2026-01-20',
+  },
+  {
+    studentId: '3',
+    studentName: 'Nurul Aisyah binti Abdullah',
+    bloodType: 'B+',
+    allergies: ['Peanuts'],
+    chronicConditions: [],
+    emergencyContact: 'Abdullah Bin Hassan (+60123456789)',
+    lastScreeningDate: '2026-02-04',
+  },
+];
+
+export const healthIncidents: HealthIncidentRecord[] = [
+  {
+    id: 'hinc-001',
+    studentId: '1',
+    studentName: 'Ahmad Bin Abdullah',
+    centreName: 'Pusat Jagaan Wangsa Maju',
+    severity: 'medium',
+    incidentType: 'illness',
+    notes: 'Shortness of breath after PE session.',
+    actionTaken: 'Inhaler used, monitored for 30 minutes, guardian notified.',
+    occurredAt: new Date('2026-02-18T10:40:00'),
+  },
+  {
+    id: 'hinc-002',
+    studentId: '3',
+    studentName: 'Nurul Aisyah binti Abdullah',
+    centreName: 'SMA MAIWP Kuala Lumpur',
+    severity: 'high',
+    incidentType: 'allergy',
+    notes: 'Allergic reaction during canteen break.',
+    actionTaken: 'First aid and clinic referral issued immediately.',
+    occurredAt: new Date('2026-02-14T12:10:00'),
+  },
+  {
+    id: 'hinc-003',
+    studentId: '2',
+    studentName: 'Fatimah Binti Ismail',
+    centreName: 'Pusat Jagaan Wangsa Maju',
+    severity: 'low',
+    incidentType: 'injury',
+    notes: 'Minor knee scrape at playground.',
+    actionTaken: 'Cleaned wound and applied dressing.',
+    occurredAt: new Date('2026-02-10T09:20:00'),
+  },
+];
+
+export const vaccinationRecords: VaccinationRecord[] = [
+  {
+    id: 'vac-001',
+    studentId: '1',
+    studentName: 'Ahmad Bin Abdullah',
+    vaccine: 'MMR Booster',
+    dose: 'Booster',
+    dueDate: '2026-03-10',
+    status: 'due_soon',
+    lastUpdatedAt: new Date('2026-02-20T09:00:00'),
+  },
+  {
+    id: 'vac-002',
+    studentId: '2',
+    studentName: 'Fatimah Binti Ismail',
+    vaccine: 'DTP',
+    dose: 'Dose 3',
+    dueDate: '2026-01-15',
+    status: 'overdue',
+    lastUpdatedAt: new Date('2026-02-19T09:00:00'),
+  },
+  {
+    id: 'vac-003',
+    studentId: '3',
+    studentName: 'Nurul Aisyah binti Abdullah',
+    vaccine: 'HPV',
+    dose: 'Dose 2',
+    dueDate: '2026-05-01',
+    status: 'up_to_date',
+    lastUpdatedAt: new Date('2026-02-12T09:00:00'),
+  },
+];

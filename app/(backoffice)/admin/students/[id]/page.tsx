@@ -2,19 +2,78 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip } from '@/components/ui/tooltip';
 import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
-import { ChevronRight, Home, Users, ArrowLeft, Calendar, Building2, DollarSign, User, Phone, Mail, MapPin, Check, X, Clock, CreditCard, Receipt, TrendingUp, List, CalendarDays, ChevronLeft as ChevronLeftIcon, Gift, ArrowRightLeft, UserMinus, History } from 'lucide-react';
+import { ChevronRight, Home, Users, ArrowLeft, Calendar, Building2, DollarSign, User, Phone, Mail, MapPin, Check, X, Clock, CreditCard, Receipt, TrendingUp, List, CalendarDays, ChevronLeft as ChevronLeftIcon, Gift, ArrowRightLeft, UserMinus, History, Info } from 'lucide-react';
 import { generateStudentPDF } from '@/lib/utils/generate-student-pdf';
 import { StudentTimeline } from '@/components/student-lifecycle/student-timeline';
+
+const studentPhotoMap: Record<string, string> = {
+  'pri-001': '/images/ahmad.jpg',
+  '3': '/images/aisyah.jpg',
+  '4': '/images/irfan.jpg',
+};
+
+const studentHealthMap: Record<string, {
+  bloodType: string;
+  allergies: string[];
+  chronicConditions: string[];
+  emergencyContact: string;
+  lastScreeningDate: string;
+}> = {
+  'pri-001': {
+    bloodType: 'A+',
+    allergies: ['Seafood'],
+    chronicConditions: ['Mild asthma'],
+    emergencyContact: 'Abdul Rahman bin Hassan (+60123456701)',
+    lastScreeningDate: '2026-01-15',
+  },
+};
+
+const studentCurriculumMap: Record<string, Array<{ term: string; subject: string; score: number; grade: string; remark: string }>> = {
+  'pri-001': [
+    { term: 'Term 1', subject: 'Bahasa Melayu', score: 82, grade: 'A', remark: 'Good reading fluency' },
+    { term: 'Term 1', subject: 'Matematik', score: 88, grade: 'A', remark: 'Strong numeracy skills' },
+    { term: 'Term 1', subject: 'Sains', score: 79, grade: 'B+', remark: 'Improving practical understanding' },
+    { term: 'Term 1', subject: 'Pendidikan Islam', score: 91, grade: 'A+', remark: 'Excellent mastery' },
+  ],
+};
+
+const studentCommentsMap: Record<string, string[]> = {
+  'pri-001': [
+    'Shows positive classroom behaviour and participates actively in discussions.',
+    'Punctuality improved this term, with fewer late arrivals compared to prior months.',
+    'Benefits from additional reading practice at home for language enrichment.',
+  ],
+};
+
+const studentRecommendationsMap: Record<string, string[]> = {
+  'pri-001': [
+    'Continue weekly reading log with guardian verification.',
+    'Maintain attendance above 95% with focus on morning punctuality.',
+    'Provide extension activities in Mathematics to sustain high performance.',
+  ],
+};
+
+interface StudentReceiptData {
+  receiptNo: string;
+  month: string;
+  amount: number;
+  paidDate: string;
+}
 
 export default function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const student = malaysianStudents.find(s => s.id === id);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<StudentReceiptData | null>(null);
 
   if (!student) {
     return (
@@ -129,6 +188,59 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const paidMonths = feeData.filter(f => f.status === 'paid').length;
   const totalSubsidyCredited = monthlySubsidy * paidMonths;
   const fundSource = subsidyFundSource[student.subsidyCategory] ?? 'N/A';
+  const studentPhoto = studentPhotoMap[student.id];
+  const attendanceNumeric = Number(attendanceRate);
+
+  const aiAssessment = {
+    overview: `Based on attendance (${attendanceRate}%), payment pattern, and curriculum trend, ${student.name} is currently in a ${
+      attendanceNumeric >= 90 && totalPending === 0 ? 'stable' : attendanceNumeric >= 80 ? 'watch' : 'intervention'
+    } performance band.`,
+    strengths: [
+      attendanceNumeric >= 90 ? 'Strong and consistent attendance behavior.' : 'Attendance remains generally acceptable.',
+      coverageRate >= 0.5 ? `Subsidy coverage supports continuity (${(coverageRate * 100).toFixed(0)}%).` : 'Financial independence without subsidy dependency.',
+      'Guardian contactability and profile completeness are available for follow-up.',
+    ],
+    risks: [
+      totalPending > 0 ? `Outstanding fee exposure detected (RM ${totalPending.toLocaleString('en-MY')}).` : 'No major fee delinquency observed.',
+      attendanceNumeric < 85 ? 'Attendance trend below target threshold (<85%).' : 'Attendance variance should still be monitored monthly.',
+      'Performance consistency depends on sustained guardian engagement.',
+    ],
+    nextActions: [
+      'Run monthly advisor review with attendance and fee checkpoints.',
+      'Prioritize support on lowest-performing subject in next assessment cycle.',
+      totalPending > 0 ? 'Initiate payment reminder and structured repayment communication.' : 'Maintain current cadence and monitor for early warning signals.',
+    ],
+    confidence: Math.max(72, Math.min(95, Math.round((attendanceNumeric + (totalPending === 0 ? 10 : 0) + (coverageRate * 20)) / 1.3))),
+  };
+
+  const handleGenerateReport = async () => {
+    await generateStudentPDF(
+      student,
+      { presentCount, lateCount, absentCount, totalDays: attendanceArray.length, attendanceRate },
+      feeData,
+      { subsidyCategory: student.subsidyCategory, monthlySubsidy, totalSubsidyCredited, monthsCovered: paidMonths, fundSource },
+      {
+        profilePhotoUrl: studentPhoto,
+        health: studentHealthMap[student.id],
+        curriculum: studentCurriculumMap[student.id],
+        comments: studentCommentsMap[student.id],
+        recommendations: studentRecommendationsMap[student.id],
+        aiAssessment,
+      },
+    );
+  };
+
+  const openReceipt = (record: { month: string; amount: number; paidDate: string | null }) => {
+    if (!record.paidDate) return;
+    const token = `${record.month.slice(0, 3).toUpperCase()}-${student.studentCode.slice(-4)}-${record.paidDate.replace(/\//g, '')}`;
+    setSelectedReceipt({
+      receiptNo: `RCP-${token}`,
+      month: record.month,
+      amount: record.amount,
+      paidDate: record.paidDate,
+    });
+    setReceiptOpen(true);
+  };
 
   const getAttendanceColor = (status: string) => {
     switch (status) {
@@ -166,7 +278,24 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div>
+        <div className="flex items-start gap-4">
+          {studentPhoto ? (
+            <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0">
+              <Image
+                src={studentPhoto}
+                alt={student.name}
+                width={64}
+                height={64}
+                className="h-full w-full object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="h-16 w-16 rounded-full border-2 border-white shadow-sm bg-blue-500 flex items-center justify-center text-white text-xl font-bold shrink-0">
+              {student.name.charAt(0)}
+            </div>
+          )}
+          <div>
           <div className="flex items-center gap-3 mb-2">
             <Link href="/admin/students">
               <Button variant="ghost" size="sm" className="gap-2">
@@ -185,17 +314,13 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
               {student.subsidyCategory}
             </Badge>
           </div>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             className="gap-2 cursor-pointer"
-            onClick={() => generateStudentPDF(
-              student,
-              { presentCount, lateCount, absentCount, totalDays: attendanceArray.length, attendanceRate },
-              feeData,
-              { subsidyCategory: student.subsidyCategory, monthlySubsidy, totalSubsidyCredited, monthsCovered: paidMonths, fundSource },
-            )}
+            onClick={handleGenerateReport}
           >
             <Receipt className="h-4 w-4" />
             Generate Report
@@ -430,6 +555,46 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
         </CardContent>
       </Card>
 
+      {/* AI Assessment */}
+      <Card className="border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
+            AI Student Assessment
+            <Tooltip label="Rationale: Attendance trend, outstanding fees, subsidy coverage, guardian profile readiness, and curriculum pattern signals.">
+              <Info className="h-4 w-4 text-blue-600 cursor-help" />
+            </Tooltip>
+          </CardTitle>
+          <CardDescription>Automated summary from attendance, billing and profile signals (POC model).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3">
+            <p className="text-sm leading-relaxed">{aiAssessment.overview}</p>
+            <p className="text-xs text-muted-foreground mt-2">Model confidence: <span className="font-semibold">{aiAssessment.confidence}%</span></p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <p className="font-semibold text-green-800 mb-2">Strengths</p>
+              {aiAssessment.strengths.map((item, idx) => (
+                <p key={`s-${idx}`} className="text-xs text-green-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="font-semibold text-amber-800 mb-2">Risks</p>
+              {aiAssessment.risks.map((item, idx) => (
+                <p key={`r-${idx}`} className="text-xs text-amber-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <p className="font-semibold text-blue-800 mb-2">Recommended Actions</p>
+              {aiAssessment.nextActions.map((item, idx) => (
+                <p key={`a-${idx}`} className="text-xs text-blue-700">• {item}</p>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Attendance History - Split into 2 cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Statistics Card */}
@@ -638,7 +803,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
                   </TableCell>
                   <TableCell>
                     {record.status === 'paid' ? (
-                      <Button size="sm" variant="outline" className="gap-2">
+                      <Button size="sm" variant="outline" className="gap-2" onClick={() => openReceipt(record)}>
                         <Receipt className="h-4 w-4" />
                         Receipt
                       </Button>
@@ -696,6 +861,28 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           <StudentTimeline studentId={student.id} />
         </CardContent>
       </Card>
+
+      <Dialog open={receiptOpen} onOpenChange={setReceiptOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Payment Receipt</DialogTitle>
+            <DialogDescription>Official payment reference for student account history.</DialogDescription>
+          </DialogHeader>
+          {selectedReceipt && (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-lg border p-3 space-y-2">
+                <div className="flex justify-between"><span className="text-muted-foreground">Student</span><span className="font-semibold">{student.name}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Student Code</span><span className="font-semibold">{student.studentCode}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Receipt No.</span><span className="font-semibold font-mono">{selectedReceipt.receiptNo}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Billing Month</span><span className="font-semibold">{selectedReceipt.month}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Paid Date</span><span className="font-semibold">{selectedReceipt.paidDate}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-bold text-green-700">RM {selectedReceipt.amount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span></div>
+              </div>
+              <p className="text-xs text-muted-foreground">This receipt is generated in demo mode for POC presentation.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

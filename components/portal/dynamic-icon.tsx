@@ -3,7 +3,7 @@ import {
   UserPlus, Building2, GraduationCap, Calendar, CalendarDays, CalendarCheck,
   Folder, BookOpen, Star, BarChart2, TrendingUp, Award, Clock, Baby,
   Palette, Building, LogOut, Shield, FileBarChart, LayoutDashboard,
-  ArrowRightLeft, UserMinus, RefreshCw, History, FileCheck, ClipboardList,
+  ArrowRightLeft, UserMinus, RefreshCw, History, FileCheck, ClipboardList, AlertCircle,
 } from 'lucide-react';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -11,7 +11,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   UserPlus, Building2, GraduationCap, Calendar, CalendarDays, CalendarCheck,
   Folder, BookOpen, Star, BarChart2, TrendingUp, Award, Clock, Baby,
   Palette, Building, LogOut, Shield, FileBarChart, LayoutDashboard,
-  ArrowRightLeft, UserMinus, RefreshCw, History, FileCheck, ClipboardList,
+  ArrowRightLeft, UserMinus, RefreshCw, History, FileCheck, ClipboardList, AlertCircle,
 };
 
 interface DynamicIconProps {

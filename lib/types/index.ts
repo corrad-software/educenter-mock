@@ -229,6 +229,116 @@ export interface DashboardStats {
 }
 
 // ============================================================
+// OPERATIONS MODULE TYPES
+// ============================================================
+
+export type ComplaintStatus = 'new' | 'investigating' | 'resolved' | 'closed';
+export type ComplaintPriority = 'low' | 'medium' | 'high' | 'critical';
+export type ComplaintChannel = 'portal' | 'whatsapp' | 'email' | 'walk_in' | 'phone';
+
+export interface ComplaintRecord {
+  id: string;
+  referenceNo: string;
+  studentId: string;
+  studentName: string;
+  centreName: string;
+  category: 'billing' | 'attendance' | 'behaviour' | 'facility' | 'staff' | 'other';
+  subject: string;
+  description: string;
+  submittedBy: string;
+  channel: ComplaintChannel;
+  status: ComplaintStatus;
+  priority: ComplaintPriority;
+  assignedTo: string;
+  submittedAt: Date;
+  dueAt: Date;
+  resolvedAt?: Date;
+}
+
+export interface ComplaintTimelineEntry {
+  id: string;
+  complaintId: string;
+  action: string;
+  actor: string;
+  note: string;
+  at: Date;
+}
+
+export type CoCurricularType = 'sports' | 'uniformed' | 'club' | 'religious' | 'arts';
+
+export interface CoCurricularActivity {
+  id: string;
+  code: string;
+  name: string;
+  type: CoCurricularType;
+  centreName: string;
+  coach: string;
+  schedule: string;
+  maxParticipants: number;
+  activeParticipants: number;
+  status: 'active' | 'planned' | 'completed';
+}
+
+export interface CoCurricularParticipation {
+  id: string;
+  studentId: string;
+  studentName: string;
+  activityId: string;
+  activityName: string;
+  attendanceRate: number;
+  meritPoints: number;
+  achievement?: string;
+  status: 'active' | 'on_hold' | 'completed';
+}
+
+export type InstitutionalEventType = 'academic' | 'exam' | 'holiday' | 'co_curricular' | 'inspection';
+
+export interface InstitutionalCalendarEvent {
+  id: string;
+  title: string;
+  type: InstitutionalEventType;
+  level: EducationLevel;
+  centreName: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  owner: string;
+  status: 'upcoming' | 'ongoing' | 'completed';
+}
+
+export interface StudentHealthProfile {
+  studentId: string;
+  studentName: string;
+  bloodType: string;
+  allergies: string[];
+  chronicConditions: string[];
+  emergencyContact: string;
+  lastScreeningDate: string; // YYYY-MM-DD
+}
+
+export interface HealthIncidentRecord {
+  id: string;
+  studentId: string;
+  studentName: string;
+  centreName: string;
+  severity: 'low' | 'medium' | 'high';
+  incidentType: 'injury' | 'illness' | 'allergy' | 'other';
+  notes: string;
+  actionTaken: string;
+  occurredAt: Date;
+}
+
+export interface VaccinationRecord {
+  id: string;
+  studentId: string;
+  studentName: string;
+  vaccine: string;
+  dose: string;
+  dueDate: string; // YYYY-MM-DD
+  status: 'up_to_date' | 'due_soon' | 'overdue';
+  lastUpdatedAt: Date;
+}
+
+// ============================================================
 // TEACHER PORTAL TYPES
 // ============================================================
 

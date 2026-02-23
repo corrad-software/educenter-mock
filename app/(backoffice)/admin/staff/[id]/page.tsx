@@ -4,8 +4,9 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip } from '@/components/ui/tooltip';
 import { malaysianStaff } from '@/lib/mock-data/malaysian-staff';
-import { ArrowLeft, Mail, Phone, Building2, Calendar, DollarSign, BookOpen, Baby } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Building2, Calendar, DollarSign, BookOpen, Baby, Info } from 'lucide-react';
 import Link from 'next/link';
 
 export default function StaffDetailPage() {
@@ -44,6 +45,26 @@ export default function StaffDetailPage() {
   const formatStatus = (status: string) => {
     if (status === 'on_leave') return 'On Leave';
     return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  const aiAssessment = {
+    overview: `${staff.name} (${formatRole(staff.role)}) is currently in a ${staff.status === 'active' ? 'stable' : 'watch'} readiness state for ${staff.centreCode}.`,
+    confidence: staff.status === 'active' ? 90 : staff.status === 'on_leave' ? 78 : 74,
+    strengths: [
+      `Qualified in: ${staff.qualification}.`,
+      `Assigned clearly to ${staff.centreName} (${staff.centreCode}).`,
+      staff.subjectsTaught && staff.subjectsTaught.length > 0 ? `Covers ${staff.subjectsTaught.length} subject area(s).` : 'Role scope is defined in operations profile.',
+    ],
+    risks: [
+      staff.status === 'on_leave' ? 'Current leave status may affect schedule continuity.' : 'No immediate attendance risk flag at profile level.',
+      staff.hasChildEnrolled ? 'Payroll deduction dependency may require accurate monthly reconciliation.' : 'No payroll deduction dependency risk detected.',
+      'Potential single-point dependency if role coverage backup is limited.',
+    ],
+    actions: [
+      'Maintain quarterly competency and workload review.',
+      'Ensure backup assignment is documented for critical duties.',
+      'Track attendance/performance KPI in monthly staff operations meeting.',
+    ],
   };
 
   return (
@@ -205,6 +226,43 @@ export default function StaffDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            AI Staff Assessment
+            <Tooltip label="Rationale: Staff status, role criticality, qualification, centre assignment, teaching scope, and payroll deduction eligibility.">
+              <Info className="h-4 w-4 text-blue-600 cursor-help" />
+            </Tooltip>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3">
+            <p className="text-sm leading-relaxed">{aiAssessment.overview}</p>
+            <p className="text-xs text-muted-foreground mt-2">Model confidence: <span className="font-semibold">{aiAssessment.confidence}%</span></p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <p className="font-semibold text-green-800 mb-2">Strengths</p>
+              {aiAssessment.strengths.map((item, idx) => (
+                <p key={`str-${idx}`} className="text-xs text-green-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="font-semibold text-amber-800 mb-2">Risks</p>
+              {aiAssessment.risks.map((item, idx) => (
+                <p key={`risk-${idx}`} className="text-xs text-amber-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <p className="font-semibold text-blue-800 mb-2">Recommended Actions</p>
+              {aiAssessment.actions.map((item, idx) => (
+                <p key={`act-${idx}`} className="text-xs text-blue-700">• {item}</p>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

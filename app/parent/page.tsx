@@ -44,8 +44,8 @@ type ChildMeta = {
 
 const childrenMeta: Record<string, ChildMeta> = {
   '1': { level: 'Primary', levelColor: 'bg-blue-100 text-blue-700', yearLabel: 'Year', photo: '/images/shahrul.jpg', LevelIcon: School },
-  '3': { level: 'Secondary', levelColor: 'bg-purple-100 text-purple-700', yearLabel: 'Form', LevelIcon: GraduationCap },
-  '4': { level: 'University', levelColor: 'bg-amber-100 text-amber-700', yearLabel: 'Semester', LevelIcon: Building },
+  '3': { level: 'Secondary', levelColor: 'bg-purple-100 text-purple-700', yearLabel: 'Form', photo: '/images/aisyah.jpg', LevelIcon: GraduationCap },
+  '4': { level: 'University', levelColor: 'bg-amber-100 text-amber-700', yearLabel: 'Semester', photo: '/images/irfan.jpg', LevelIcon: Building },
 };
 
 const allExamResults: Record<string, ExamEntry[]> = {
@@ -488,11 +488,26 @@ export default function ParentPortalPage() {
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold ${
-                        isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
-                      }`}>
-                        {child.name.charAt(0)}
-                      </div>
+                      {childMeta?.photo ? (
+                        <div className={`h-9 w-9 rounded-full overflow-hidden border ${
+                          isActive ? 'border-blue-500 ring-1 ring-blue-200' : 'border-gray-200'
+                        }`}>
+                          <Image
+                            src={childMeta.photo}
+                            alt={child.name}
+                            width={36}
+                            height={36}
+                            className="h-full w-full object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold ${
+                          isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {child.name.charAt(0)}
+                        </div>
+                      )}
                       <div className="text-left">
                         <p className={`text-sm font-semibold ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
                           {child.name}

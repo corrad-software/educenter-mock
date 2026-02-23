@@ -636,3 +636,7 @@ export const mockDashboardStats: DashboardStats = {
 
 export { mockApplications, mockTransferRequests, mockWithdrawalRequests, mockTimelineEvents } from './student-lifecycle';
 export { malaysianStaff } from './malaysian-staff';
+export { complaintRecords, complaintTimeline } from './complaints';
+export { cocurricularActivities, cocurricularParticipation } from './cocurricular';
+export { institutionalCalendarEvents } from './calendar';
+export { healthProfiles, healthIncidents, vaccinationRecords } from './health';

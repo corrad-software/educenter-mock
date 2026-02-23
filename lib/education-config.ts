@@ -317,6 +317,28 @@ export interface NavItem {
   children?: NavItem[];
 }
 
+const CROSS_CUTTING_NAV_ITEMS: NavItem[] = [
+  { id: 'complaints', label: 'Complaints', href: '/admin/complaints', iconName: 'FileText' },
+  {
+    id: 'cocurricular', label: 'Co-Curricular', href: '/admin/cocurricular', iconName: 'Star',
+    children: [
+      { id: 'cocurricular-overview', label: 'Overview', href: '/admin/cocurricular', iconName: 'LayoutDashboard' },
+      { id: 'cocurricular-activities', label: 'Activities', href: '/admin/cocurricular/activities', iconName: 'BookOpen' },
+      { id: 'cocurricular-participation', label: 'Participation', href: '/admin/cocurricular/participation', iconName: 'Users' },
+      { id: 'cocurricular-outcomes', label: 'Outcomes', href: '/admin/cocurricular/outcomes', iconName: 'Award' },
+    ],
+  },
+  { id: 'calendar', label: 'Institutional Calendar', href: '/admin/calendar', iconName: 'CalendarDays' },
+  {
+    id: 'health', label: 'Health', href: '/admin/health', iconName: 'Activity',
+    children: [
+      { id: 'health-overview', label: 'Overview', href: '/admin/health', iconName: 'LayoutDashboard' },
+      { id: 'health-incidents', label: 'Incidents', href: '/admin/health/incidents', iconName: 'AlertCircle' },
+      { id: 'health-vaccinations', label: 'Vaccinations', href: '/admin/health/vaccinations', iconName: 'Shield' },
+    ],
+  },
+];
+
 export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
   maiwp: [
     { id: 'dashboard', label: 'Dashboard', href: '/admin', iconName: 'Home' },
@@ -352,6 +374,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'fees-setup', label: 'Fee Setup', href: '/admin/fee-setup', iconName: 'Settings' },
       ],
     },
+    ...CROSS_CUTTING_NAV_ITEMS,
     {
       id: 'reports', label: 'Reports', href: '/admin/reports', iconName: 'FileBarChart',
       children: [
@@ -403,6 +426,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'fees-setup', label: 'Fee Setup', href: '/admin/fee-setup', iconName: 'Settings' },
       ],
     },
+    ...CROSS_CUTTING_NAV_ITEMS,
     {
       id: 'reports', label: 'Reports', href: '/admin/reports', iconName: 'FileBarChart',
       children: [
@@ -456,6 +480,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'fees-setup', label: 'Fee Setup', href: '/admin/fee-setup', iconName: 'Settings' },
       ],
     },
+    ...CROSS_CUTTING_NAV_ITEMS,
     {
       id: 'reports', label: 'Reports', href: '/admin/reports', iconName: 'FileBarChart',
       children: [
@@ -509,6 +534,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'fees-setup', label: 'Fee Setup', href: '/admin/fee-setup', iconName: 'Settings' },
       ],
     },
+    ...CROSS_CUTTING_NAV_ITEMS,
     {
       id: 'reports', label: 'Reports', href: '/admin/reports', iconName: 'FileBarChart',
       children: [
@@ -560,6 +586,7 @@ export const LEVEL_NAV_ITEMS: Record<EducationLevel, NavItem[]> = {
         { id: 'fees-setup', label: 'Semester Fee Setup', href: '/admin/fee-setup', iconName: 'Settings' },
       ],
     },
+    ...CROSS_CUTTING_NAV_ITEMS,
     {
       id: 'reports', label: 'Reports', href: '/admin/reports', iconName: 'FileBarChart',
       children: [

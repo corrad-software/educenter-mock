@@ -10,7 +10,7 @@ import { malaysianStaff } from '@/lib/mock-data/malaysian-staff';
 import { malaysianInstitutes } from '@/lib/mock-data/malaysian-institutes';
 import { Pagination } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserCheck, GraduationCap, Users, Clock, Search, Pencil, Trash2, Eye, UserPlus, Filter } from 'lucide-react';
+import { UserCheck, GraduationCap, Users, Clock, Search, Pencil, Trash2, Eye, UserPlus, Filter, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useEducationStore } from '@/lib/store/education-store';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -53,6 +53,28 @@ export default function StaffPage() {
   const staffRatio = teachingStaff > 0 ? Math.round(totalStudents / teachingStaff) : 0;
   const onLeaveCount = levelStaff.filter(s => s.status === 'on_leave').length;
   const onLeavePercent = totalStaff > 0 ? ((onLeaveCount / totalStaff) * 100).toFixed(1) : '0';
+  const activePct = totalStaff > 0 ? (activeStaff / totalStaff) * 100 : 0;
+  const onLeavePctNum = totalStaff > 0 ? (onLeaveCount / totalStaff) * 100 : 0;
+
+  const aiAssessment = {
+    overview: `Staff operations are currently ${activePct >= 85 ? 'stable' : 'watch-listed'} with ${activeStaff}/${totalStaff} active personnel and 1:${staffRatio} teaching-to-student ratio.`,
+    confidence: Math.max(70, Math.min(95, Math.round((activePct + (staffRatio > 0 ? Math.min(100 / staffRatio * 20, 20) : 0) + 65) / 2))),
+    strengths: [
+      activePct >= 85 ? 'High active workforce availability for daily operations.' : 'Reasonable active workforce coverage is maintained.',
+      `Teaching pool size is ${teachingStaff} across ${totalStudents} students.`,
+      'Role and centre allocation data are complete for planning.',
+    ],
+    risks: [
+      onLeaveCount > 0 ? `${onLeaveCount} staff on leave (${onLeavePctNum.toFixed(1)}%) may affect timetable continuity.` : 'Leave exposure is currently minimal.',
+      staffRatio > 20 ? `Staff-student ratio (1:${staffRatio}) is above recommended comfort range.` : 'Staff-student ratio is within expected operational range.',
+      'Potential concentration risk if key subject teachers are absent simultaneously.',
+    ],
+    actions: [
+      'Review weekly leave coverage and assign backups for critical roles.',
+      'Prioritize recruitment/rotation for centres with rising ratio pressure.',
+      'Track subject-level teaching load to prevent burnout and scheduling gaps.',
+    ],
+  };
 
   // Pagination
   const totalPages = Math.ceil(filteredStaff.length / ITEMS_PER_PAGE);
@@ -146,6 +168,44 @@ export default function StaffPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            AI Staff Assessment
+            <Tooltip label="Rationale: Active staff %, on-leave %, teaching-student ratio, role mix, and centre allocation coverage.">
+              <Info className="h-4 w-4 text-blue-600 cursor-help" />
+            </Tooltip>
+          </CardTitle>
+          <CardDescription>Automated staffing health summary for operational planning (POC).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3">
+            <p className="text-sm leading-relaxed">{aiAssessment.overview}</p>
+            <p className="text-xs text-muted-foreground mt-2">Model confidence: <span className="font-semibold">{aiAssessment.confidence}%</span></p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <p className="font-semibold text-green-800 mb-2">Strengths</p>
+              {aiAssessment.strengths.map((item, idx) => (
+                <p key={`str-${idx}`} className="text-xs text-green-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="font-semibold text-amber-800 mb-2">Risks</p>
+              {aiAssessment.risks.map((item, idx) => (
+                <p key={`risk-${idx}`} className="text-xs text-amber-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <p className="font-semibold text-blue-800 mb-2">Recommended Actions</p>
+              {aiAssessment.actions.map((item, idx) => (
+                <p key={`act-${idx}`} className="text-xs text-blue-700">• {item}</p>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

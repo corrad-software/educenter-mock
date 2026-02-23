@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { malaysianStudents } from '@/lib/mock-data/malaysian-students';
 import { malaysianInstitutes } from '@/lib/mock-data/malaysian-institutes';
 import { Pagination } from '@/components/ui/pagination';
-import { Building2, Search, Eye, UserPlus, UserMinus, ArrowRightLeft, ChevronRight, Home, GraduationCap } from 'lucide-react';
+import { Tooltip } from '@/components/ui/tooltip';
+import { Building2, Search, Eye, UserPlus, UserMinus, ArrowRightLeft, ChevronRight, Home, GraduationCap, Info } from 'lucide-react';
 import Link from 'next/link';
 
 const ITEMS_PER_PAGE = 15;
@@ -88,6 +89,64 @@ export default function InstituteDetailPage({ params }: PageProps) {
   const b40Students = instituteStudents.filter(s => s.subsidyCategory === 'B40').length;
   const m40Students = instituteStudents.filter(s => s.subsidyCategory === 'M40').length;
   const capacityUtilization = ((totalStudents / institute.capacity) * 100).toFixed(0);
+  const transferredStudents = instituteStudents.filter(s => s.status === 'transferred').length;
+  const withdrawnStudents = instituteStudents.filter(s => s.status === 'withdrawn').length;
+
+  const utilizationNum = totalStudents > 0 ? (totalStudents / institute.capacity) * 100 : 0;
+  const b40Pct = totalStudents > 0 ? (b40Students / totalStudents) * 100 : 0;
+  const pendingPct = totalStudents > 0 ? (pendingStudents / totalStudents) * 100 : 0;
+
+  const instituteAiPreset: Record<string, {
+    overview: string;
+    confidence: number;
+    strengths: string[];
+    risks: string[];
+    actions: string[];
+  }> = {
+    'sabk-001': {
+      overview: `SABK Darul Ulum is operating in a stable band. Enrollment utilization is ${utilizationNum.toFixed(0)}% with healthy active-student concentration and manageable pending applications.`,
+      confidence: 88,
+      strengths: [
+        'Active student share is high, indicating good retention.',
+        `B40 support coverage is significant (${b40Pct.toFixed(0)}%), aligned with MAIWP social objective.`,
+        'Current operational load is below full capacity, allowing intake flexibility.',
+      ],
+      risks: [
+        pendingStudents > 0 ? `Pending intake queue requires timely decisioning (${pendingStudents} records).` : 'Pending application queue is currently low risk.',
+        transferredStudents + withdrawnStudents > 0
+          ? `Movement trend detected (${transferredStudents} transferred, ${withdrawnStudents} withdrawn).`
+          : 'Student movement churn is currently low.',
+        'Subsidy-heavy population may increase financial sensitivity to fund allocation changes.',
+      ],
+      actions: [
+        'Run weekly application review SLA to keep pending ratio under control.',
+        'Track movement reasons monthly and execute retention interventions.',
+        'Align seat planning with upcoming intake cycle and subsidy forecast.',
+      ],
+    },
+  };
+
+  const defaultAi = {
+    overview: `${institute.name} is currently in a monitored operating state with ${utilizationNum.toFixed(0)}% capacity utilization and ${pendingPct.toFixed(0)}% pending pipeline.`,
+    confidence: 82,
+    strengths: [
+      'Institute profile and enrollment data are complete for planning decisions.',
+      'Current utilization provides actionable visibility for intake and staffing.',
+      'Subsidy segmentation supports targeted welfare monitoring.',
+    ],
+    risks: [
+      pendingStudents > 0 ? 'Pending application queue may delay onboarding experience.' : 'Pending pipeline is low risk at the moment.',
+      utilizationNum > 90 ? 'Capacity pressure may impact service quality if intake increases.' : 'Capacity buffer should still be monitored for sudden growth.',
+      'Cross-term consistency depends on active attendance and fee follow-up.',
+    ],
+    actions: [
+      'Review intake, attendance, and fee signals in monthly ops meeting.',
+      'Set threshold alerts for capacity and pending volume.',
+      'Prioritize high-risk student segments for early intervention.',
+    ],
+  };
+
+  const aiAssessment = instituteAiPreset[institute.id] ?? defaultAi;
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
@@ -245,6 +304,45 @@ export default function InstituteDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Assessment */}
+      <Card className="border-blue-200 bg-linear-to-r from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            AI Institute Assessment
+            <Tooltip label="Rationale: Capacity utilization, active/pending ratio, subsidy mix, student movement trend, and intake pressure signals.">
+              <Info className="h-4 w-4 text-blue-600 cursor-help" />
+            </Tooltip>
+          </CardTitle>
+          <CardDescription>Automated operational assessment for institute-level monitoring (POC).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3">
+            <p className="text-sm leading-relaxed">{aiAssessment.overview}</p>
+            <p className="text-xs text-muted-foreground mt-2">Model confidence: <span className="font-semibold">{aiAssessment.confidence}%</span></p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <p className="font-semibold text-green-800 mb-2">Strengths</p>
+              {aiAssessment.strengths.map((item, idx) => (
+                <p key={`str-${idx}`} className="text-xs text-green-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <p className="font-semibold text-amber-800 mb-2">Risks</p>
+              {aiAssessment.risks.map((item, idx) => (
+                <p key={`risk-${idx}`} className="text-xs text-amber-700">• {item}</p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <p className="font-semibold text-blue-800 mb-2">Recommended Actions</p>
+              {aiAssessment.actions.map((item, idx) => (
+                <p key={`act-${idx}`} className="text-xs text-blue-700">• {item}</p>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Students Table */}
       <Card>
