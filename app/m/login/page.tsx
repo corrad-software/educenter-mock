@@ -46,7 +46,7 @@ export default function MobileLoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <Image src="/logodsc.png" alt="EduCentre" width={180} height={36} className="h-9 w-auto mb-3" />
+          <Image src="/images/logomw.png" alt="MW Logo" width={180} height={180} className="h-16 w-auto mb-3" />
           <h1 className="text-xl font-bold text-gray-900">EduCentre</h1>
           <p className="text-xs text-gray-500 mt-1">MAIWP Education Portal</p>
         </div>

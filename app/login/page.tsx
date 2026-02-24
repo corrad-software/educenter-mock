@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { Shield, BookOpen, School, GraduationCap, Building, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -11,9 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEducationStore } from '@/lib/store/education-store';
 import { LEVEL_META, LEVEL_COLOR_CLASSES } from '@/lib/education-config';
-import type { EducationLevel, PortalRole } from '@/lib/types';
+import type { EducationLevel } from '@/lib/types';
 
-type LoginRole = 'maiwp_admin' | 'school_admin' | 'teacher' | 'parent';
+type LoginRole = 'maiwp_admin' | 'school_admin' | 'teacher' | 'parent' | 'parent_external_invoice';
 
 const SCHOOL_LEVELS: EducationLevel[] = ['preschool', 'primary', 'secondary', 'university'];
 
@@ -48,6 +49,9 @@ export default function LoginPage() {
     } else if (loginRole === 'teacher') {
       selectLevel(schoolType, 'teacher');
       router.push('/teacher');
+    } else if (loginRole === 'parent_external_invoice') {
+      selectLevel(schoolType, 'parent');
+      router.push('/parent?mode=external');
     } else {
       selectLevel(schoolType, 'parent');
       router.push('/parent');
@@ -55,16 +59,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
       {/* Header */}
       <div className="text-center mb-8 space-y-2">
         <div className="flex justify-center mb-4">
           <Image
-            src="/images/logodsc.png"
-            alt="Datascience Logo"
+            src="/images/logomw.png"
+            alt="MW Logo"
             width={200}
-            height={40}
-            className="h-10 w-auto"
+            height={200}
+            className="h-16 w-auto"
             unoptimized
           />
         </div>
@@ -129,6 +133,12 @@ export default function LoginPage() {
                     <span>Parent / Guardian</span>
                   </div>
                 </SelectItem>
+                <SelectItem value="parent_external_invoice">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4 text-indigo-600" />
+                    <span>Parent (External Invoice POC)</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -182,6 +192,12 @@ export default function LoginPage() {
           <div className="text-center text-xs text-gray-400 space-y-0.5">
             <p>MAIWP → School Admins → Teachers → Parents</p>
             <p>Each school operates within its own access scope</p>
+          </div>
+
+          <div className="pt-1 text-center">
+            <Link href="/register" className="text-xs text-blue-600 hover:underline">
+              New Student Self-Service Registration
+            </Link>
           </div>
         </CardContent>
       </Card>

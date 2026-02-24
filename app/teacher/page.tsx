@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import Image from 'next/image';
 import {
   Calendar, Clock, Users, Check, X, Search, BookOpen, Award, AlertTriangle,
   Heart, TrendingUp, Plus, FileText, Download, User, MapPin, Phone,
@@ -262,8 +263,15 @@ export default function TeacherPortalPage() {
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-lg">
-                CA
+              <div className="h-14 w-14 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                <Image
+                  src="/images/cikgu.JPG"
+                  alt={teacherInfo.name}
+                  width={56}
+                  height={56}
+                  className="h-full w-full object-cover"
+                  unoptimized
+                />
               </div>
               <div className="flex items-center gap-8">
                 <div>

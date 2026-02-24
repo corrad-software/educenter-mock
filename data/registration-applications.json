@@ -1,0 +1,21 @@
+[
+  {
+    "id": "app-1771951716965-lhjxil",
+    "applicationRef": "APP-2026-00001",
+    "source": "self_service",
+    "studentName": "POC Test Student",
+    "ic": "090101-01-1234",
+    "dateOfBirth": "2009-01-01",
+    "guardianName": "POC Guardian",
+    "guardianPhone": "0123456789",
+    "guardianEmail": "poc.guardian@example.com",
+    "guardianIc": "800101-14-4321",
+    "centreId": "pri-001",
+    "centreName": "Sekolah Rendah MAIWP",
+    "educationLevel": "primary",
+    "subsidyCategory": "Asnaf",
+    "status": "submitted",
+    "appliedDate": "2026-02-24T16:48:36.965Z",
+    "notes": "API registration integration test"
+  }
+]

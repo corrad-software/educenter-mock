@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { LogOut, User } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function TeacherHeader() {
@@ -11,11 +11,11 @@ export function TeacherHeader() {
       <div className="container mx-auto flex h-16 items-center px-4 justify-between">
         <Link href="/teacher" className="flex items-center space-x-3">
           <Image
-            src="/images/logodsc.png"
-            alt="Datascience Logo"
-            width={492}
-            height={98}
-            className="h-8 w-auto"
+            src="/images/logomw.png"
+            alt="MW Logo"
+            width={200}
+            height={200}
+            className="h-10 w-auto"
             priority
             unoptimized
           />
@@ -29,7 +29,14 @@ export function TeacherHeader() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <User className="h-4 w-4" />
+            <Image
+              src="/images/cikgu.JPG"
+              alt="Teacher profile photo"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full object-cover border border-gray-200"
+              unoptimized
+            />
             <span>Cikgu Aminah binti Razak</span>
           </div>
           <Link href="/login">

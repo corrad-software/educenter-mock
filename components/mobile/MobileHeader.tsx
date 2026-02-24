@@ -34,9 +34,8 @@ export function MobileHeader() {
     <>
       <header className="glass px-4 py-3 pb-3 pt-[max(env(safe-area-inset-top,12px),12px)] flex items-center justify-between no-tap-highlight">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shrink-0 shadow-sm relative overflow-hidden">
-            <span className="text-white font-bold text-xs tracking-wider z-10 hidden">EC</span>
-            <Image src="/logodsc.png" alt="EduCentre" width={40} height={40} className="w-full h-full object-cover absolute inset-0 mix-blend-screen opacity-90 p-1" />
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+            <Image src="/images/logomw.png" alt="MW Logo" width={40} height={40} className="w-full h-full object-contain p-0.5" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-[15px] font-bold tracking-tight text-gray-900 leading-none">EduCentre</h1>

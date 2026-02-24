@@ -11,11 +11,11 @@ export function ParentHeader() {
       <div className="container mx-auto flex h-16 items-center px-4 justify-between">
         <Link href="/parent" className="flex items-center space-x-3">
           <Image
-            src="/images/logodsc.png"
-            alt="Datascience Logo"
-            width={492}
-            height={98}
-            className="h-8 w-auto"
+            src="/images/logomw.png"
+            alt="MW Logo"
+            width={200}
+            height={200}
+            className="h-10 w-auto"
             priority
             unoptimized
           />

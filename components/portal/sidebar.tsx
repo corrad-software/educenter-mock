@@ -100,11 +100,11 @@ export function Sidebar() {
       <div className="h-16 flex items-center px-6 border-b border-gray-200">
         <Link href="/admin" className="flex items-center space-x-3">
           <Image
-            src="/images/logodsc.png"
-            alt="Datascience Logo"
-            width={492}
-            height={98}
-            className="h-8 w-auto"
+            src="/images/logomw.png"
+            alt="MW Logo"
+            width={200}
+            height={200}
+            className="h-10 w-auto"
             priority
             unoptimized
           />

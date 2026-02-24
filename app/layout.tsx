@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   title: "EduCentre - MAIWP Student Management Portal",
   description: "Integrated Student Management Portal for MAIWP",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/images/logomw.png",
+    apple: "/images/logomw.png",
+    shortcut: "/images/logomw.png",
+  },
 };
 
 export default function RootLayout({

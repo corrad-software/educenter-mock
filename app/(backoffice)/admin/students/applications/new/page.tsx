@@ -89,7 +89,7 @@ export default function NewApplicationPage() {
         </Link>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">New Application</h1>
-          <p className="text-muted-foreground mt-1">Submit a new student admission application</p>
+          <p className="text-muted-foreground mt-1">Internal assisted entry form (self-service uses <span className="font-mono">/register</span>)</p>
         </div>
       </div>
 

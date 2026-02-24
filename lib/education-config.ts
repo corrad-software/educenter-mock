@@ -319,6 +319,7 @@ export interface NavItem {
 
 const CROSS_CUTTING_NAV_ITEMS: NavItem[] = [
   { id: 'complaints', label: 'Complaints', href: '/admin/complaints', iconName: 'FileText' },
+  { id: 'edms', label: 'EDMS', href: '/admin/edms', iconName: 'Folder' },
   {
     id: 'cocurricular', label: 'Co-Curricular', href: '/admin/cocurricular', iconName: 'Star',
     children: [

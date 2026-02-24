@@ -1,0 +1,20 @@
+{
+  "invoiceAmounts": [
+    { "invoiceNumber": "INV-2023-012", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-001", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-002", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-003", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-004", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-005", "amount": 800, "subsidyAmount": 400, "netAmount": 400, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-006", "amount": 800, "subsidyAmount": 240, "netAmount": 560, "penaltyAmount": 50, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-S01", "amount": 600, "subsidyAmount": 300, "netAmount": 300, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-S02", "amount": 600, "subsidyAmount": 300, "netAmount": 300, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-S03", "amount": 600, "subsidyAmount": 300, "netAmount": 300, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-S04", "amount": 600, "subsidyAmount": 300, "netAmount": 300, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-U01", "amount": 1200, "subsidyAmount": 600, "netAmount": 600, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-U02", "amount": 1200, "subsidyAmount": 600, "netAmount": 600, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-U03", "amount": 1200, "subsidyAmount": 600, "netAmount": 600, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-U04", "amount": 1200, "subsidyAmount": 600, "netAmount": 600, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" },
+    { "invoiceNumber": "INV-2024-U05", "amount": 1200, "subsidyAmount": 600, "netAmount": 600, "penaltyAmount": 0, "updatedAt": "2026-02-24T00:00:00.000Z" }
+  ]
+}

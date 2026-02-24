@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { mockInvoices, mockStudents, mockSubsidyRules } from '@/lib/mock-data';
 import { format } from 'date-fns';
 import { DollarSign, FileText, CreditCard, Bell, Calendar, User, Users, MapPin, CheckCircle, Download, Printer, ChevronLeft, ChevronRight, Award, TrendingUp, TrendingDown, Minus, Sparkles, BookOpen, AlertTriangle, Shield, PiggyBank, HandCoins, Info, GraduationCap, School, Building } from 'lucide-react';
 import Image from 'next/image';
+import jsPDF from 'jspdf';
 import type { Invoice } from '@/lib/types';
 
 interface PaymentReceipt {
@@ -23,6 +24,48 @@ interface PaymentReceipt {
   paymentMethod: string;
   reference: string;
 }
+
+interface PaymentHistoryEntry {
+  id: string;
+  receiptNumber: string;
+  invoiceNumber: string;
+  date: string;
+  amount: number;
+  method: string;
+  reference: string;
+}
+
+interface InvoiceAmountApiRecord {
+  invoiceNumber: string;
+  amount: number;
+  subsidyAmount?: number;
+  penaltyAmount?: number;
+  netAmount?: number;
+  updatedAt?: string;
+}
+
+interface InvoiceAmountApiResponse {
+  meta: {
+    amountSource: 'external' | 'local_fallback';
+    lastFetchedAt: string;
+    externalProfile?: {
+      customerId?: string | null;
+      customerName?: string | null;
+      customerType?: string | null;
+    } | null;
+  };
+  invoices: InvoiceAmountApiRecord[];
+}
+
+const INVOICE_ISSUER = {
+  legalName: 'Majlis Agama Islam Wilayah Persekutuan (MAIWP)',
+  systemName: 'EduCentre Student Management Portal',
+  addressLine1: 'Aras 10, Bangunan PERKIM No. 150, Jalan Ipoh',
+  addressLine2: '51200 Kuala Lumpur, Malaysia',
+  phone: '+60 3-4047 9444',
+  email: 'educentre@maiwp.gov.my',
+  website: 'www.maiwp.gov.my',
+};
 
 // Per-student exam results
 type ExamEntry = {
@@ -189,11 +232,84 @@ const getGradeColor = (grade: string) => {
 };
 
 export default function ParentPortalPage() {
+  const [isExternalInvoicePocMode, setIsExternalInvoicePocMode] = useState(false);
   const guardianId = 'g1'; // demo parent
   const children = mockStudents.filter(s => s.guardianId === guardianId);
   const [selectedChildId, setSelectedChildId] = useState(children[0]?.id || '1');
-  const student = children.find(s => s.id === selectedChildId) || children[0];
-  const allInvoices = mockInvoices.filter(inv => inv.studentId === student.id);
+  const studentBase = children.find(s => s.id === selectedChildId) || children[0];
+  const baseInvoices = mockInvoices.filter(inv => inv.studentId === studentBase.id);
+  const [amountSource, setAmountSource] = useState<'external' | 'local_fallback'>('local_fallback');
+  const [invoiceAmountMap, setInvoiceAmountMap] = useState<Record<string, InvoiceAmountApiRecord>>({});
+  const [externalOnlyInvoiceRecords, setExternalOnlyInvoiceRecords] = useState<InvoiceAmountApiRecord[]>([]);
+  const [externalProfile, setExternalProfile] = useState<InvoiceAmountApiResponse['meta']['externalProfile']>(null);
+  const student = useMemo(() => {
+    const externalName = externalProfile?.customerName?.trim();
+    const externalCode = externalProfile?.customerId?.trim();
+    if (!externalName && !externalCode) return studentBase;
+
+    return {
+      ...studentBase,
+      name: externalName || studentBase.name,
+      studentCode: externalCode || studentBase.studentCode,
+      guardian: {
+        ...studentBase.guardian,
+        name: externalName || studentBase.guardian.name,
+      },
+    };
+  }, [studentBase, externalProfile]);
+  const allInvoices = useMemo(
+    () => {
+      const mergedBase = baseInvoices.map((inv) => {
+      const amountData = invoiceAmountMap[inv.invoiceNumber];
+      if (!amountData) return inv;
+
+      const amount = amountData.amount ?? inv.amount;
+      const subsidyAmount = amountData.subsidyAmount ?? inv.subsidyAmount;
+      const penaltyAmount = amountData.penaltyAmount ?? inv.penaltyAmount;
+      const netAmount = amountData.netAmount ?? amount - subsidyAmount + penaltyAmount;
+
+      return {
+        ...inv,
+        amount,
+        subsidyAmount,
+        penaltyAmount,
+        netAmount,
+      };
+      });
+
+      const existingInvoiceNumbers = new Set(mergedBase.map((item) => item.invoiceNumber));
+      const generatedFromExternal = externalOnlyInvoiceRecords
+        .filter((item) => !existingInvoiceNumbers.has(item.invoiceNumber))
+        .map((item, index) => {
+          const issueDate = item.updatedAt ? new Date(item.updatedAt) : new Date();
+          const dueDate = new Date(issueDate);
+          dueDate.setDate(issueDate.getDate() + 30);
+          const amount = item.amount ?? 0;
+          const subsidyAmount = item.subsidyAmount ?? 0;
+          const penaltyAmount = item.penaltyAmount ?? 0;
+          const netAmount = item.netAmount ?? amount - subsidyAmount + penaltyAmount;
+
+          return {
+            id: `external-${selectedChildId}-${index}`,
+            invoiceNumber: item.invoiceNumber,
+            studentId: student.id,
+            student,
+            amount,
+            subsidyAmount,
+            netAmount,
+            penaltyAmount,
+            dueDate,
+            status: 'pending' as const,
+            issueDate,
+            paidAmount: 0,
+            description: 'External invoice from billing system',
+          };
+        });
+
+      return [...mergedBase, ...generatedFromExternal];
+    },
+    [baseInvoices, invoiceAmountMap, externalOnlyInvoiceRecords, selectedChildId, student]
+  );
   const meta = childrenMeta[student.id] || childrenMeta['1'];
 
   // Compute exam data for selected child
@@ -205,18 +321,87 @@ export default function ParentPortalPage() {
   }, {} as Record<number, ExamEntry[]>);
   const sortedYears = Object.keys(resultsByYear).map(Number).sort((a, b) => b - a);
 
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [receiptDialog, setReceiptDialog] = useState(false);
+  const [invoiceDialog, setInvoiceDialog] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [invoicePreview, setInvoicePreview] = useState<Invoice | null>(null);
   const [paymentType, setPaymentType] = useState<'full' | 'partial' | 'custom'>('full');
   const [customAmount, setCustomAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('FPX');
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [currentReceipt, setCurrentReceipt] = useState<PaymentReceipt | null>(null);
+  const [internalPaymentHistory, setInternalPaymentHistory] = useState<PaymentHistoryEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [notificationDialog, setNotificationDialog] = useState(false);
   const [selectedResultYear, setSelectedResultYear] = useState(sortedYears[0] || 0);
+  const paymentHistoryStorageKey = useMemo(
+    () => `poc-parent-payment-history-${externalProfile?.customerId ?? guardianId}`,
+    [externalProfile?.customerId, guardianId]
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setIsExternalInvoicePocMode(params.get('mode') === 'external');
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(paymentHistoryStorageKey);
+      if (!raw) {
+        setInternalPaymentHistory([]);
+        return;
+      }
+      const parsed = JSON.parse(raw) as PaymentHistoryEntry[];
+      if (!Array.isArray(parsed)) {
+        setInternalPaymentHistory([]);
+        return;
+      }
+      setInternalPaymentHistory(parsed);
+    } catch {
+      setInternalPaymentHistory([]);
+    }
+  }, [paymentHistoryStorageKey]);
+
+  const refreshInvoiceAmounts = async () => {
+    const response = await fetch('/api/poc/parent/state', { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error('Unable to refresh invoices');
+    }
+
+    const payload = await response.json() as InvoiceAmountApiResponse;
+    const nextMap = Object.fromEntries(
+      payload.invoices.map((item) => [item.invoiceNumber, item])
+    ) as Record<string, InvoiceAmountApiRecord>;
+    const existingMockInvoiceNumbers = new Set(mockInvoices.map((item) => item.invoiceNumber));
+    const nextExternalOnly = payload.invoices.filter((item) => !existingMockInvoiceNumbers.has(item.invoiceNumber));
+
+    setInvoiceAmountMap(nextMap);
+    setExternalOnlyInvoiceRecords(nextExternalOnly);
+    setAmountSource(payload.meta?.amountSource ?? 'local_fallback');
+    setExternalProfile(payload.meta?.externalProfile ?? null);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        await refreshInvoiceAmounts();
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[parent] Failed to load invoice amount source.', error);
+        }
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSwitchChild = (childId: string) => {
     setSelectedChildId(childId);
@@ -230,15 +415,23 @@ export default function ParentPortalPage() {
     return amount.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const invoices = allInvoices.filter(inv =>
-    inv.invoiceNumber.includes(selectedYear)
-  );
+  const externalInvoiceNumbers = new Set(externalOnlyInvoiceRecords.map((item) => item.invoiceNumber));
+  const yearScopedInvoices = isExternalInvoicePocMode
+    ? allInvoices.filter((inv) => externalInvoiceNumbers.has(inv.invoiceNumber))
+    : allInvoices;
+  const visibleInvoices = yearScopedInvoices.filter((inv) => String(inv.issueDate.getFullYear()) === selectedYear);
 
   const availableYears = Array.from(new Set(
-    allInvoices.map(inv => inv.invoiceNumber.split('-')[1])
+    yearScopedInvoices.map((inv) => String(inv.issueDate.getFullYear()))
   )).sort().reverse();
 
-  const totalOutstanding = invoices
+  useEffect(() => {
+    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
+      setSelectedYear(availableYears[0]);
+    }
+  }, [availableYears, selectedYear, isExternalInvoicePocMode]);
+
+  const totalOutstanding = visibleInvoices
     .filter(inv => inv.status !== 'paid')
     .reduce((sum, inv) => sum + (inv.netAmount - inv.paidAmount), 0);
 
@@ -248,6 +441,108 @@ export default function ParentPortalPage() {
     setPaymentType('full');
     setCustomAmount('');
     setPaymentSuccess(false);
+    setPaymentError(null);
+  };
+
+  const openInvoicePreview = (invoice: Invoice) => {
+    setInvoicePreview(invoice);
+    setInvoiceDialog(true);
+  };
+
+  const getImageDataUrl = async (imagePath: string) => {
+    try {
+      const response = await fetch(imagePath);
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return await new Promise<string | null>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+        reader.onerror = () => reject(new Error('Unable to read logo image'));
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  const downloadInvoicePdf = async (invoice: Invoice) => {
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const margin = 14;
+    const rightEdge = 196;
+    const outstandingAmount = invoice.netAmount - invoice.paidAmount;
+    const logoData = await getImageDataUrl('/images/logomw.png');
+
+    if (logoData) {
+      doc.addImage(logoData, 'PNG', margin, 10, 20, 20);
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(INVOICE_ISSUER.legalName, 38, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(INVOICE_ISSUER.systemName, 38, 21);
+    doc.text(INVOICE_ISSUER.addressLine1, 38, 26);
+    doc.text(INVOICE_ISSUER.addressLine2, 38, 31);
+    doc.text(`Tel: ${INVOICE_ISSUER.phone} | Email: ${INVOICE_ISSUER.email}`, 38, 36);
+    doc.text(`Web: ${INVOICE_ISSUER.website}`, 38, 41);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('INVOICE', rightEdge, 18, { align: 'right' });
+    doc.setFontSize(10);
+    doc.text(`Invoice No: ${invoice.invoiceNumber}`, rightEdge, 25, { align: 'right' });
+    doc.text(`Issue Date: ${format(invoice.issueDate, 'dd MMM yyyy')}`, rightEdge, 30, { align: 'right' });
+    doc.text(`Due Date: ${format(invoice.dueDate, 'dd MMM yyyy')}`, rightEdge, 35, { align: 'right' });
+    doc.text(`Status: ${invoice.status.replace('_', ' ').toUpperCase()}`, rightEdge, 40, { align: 'right' });
+
+    doc.setDrawColor(210, 210, 210);
+    doc.line(margin, 47, rightEdge, 47);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('Bill To', margin, 55);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(student.guardian.name, margin, 61);
+    doc.text(`Student: ${student.name} (${student.studentCode})`, margin, 66);
+    doc.text(`Centre: ${student.centre.name}`, margin, 71);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Invoice Summary', margin, 82);
+    doc.setDrawColor(230, 230, 230);
+    doc.rect(margin, 86, rightEdge - margin * 2, 44);
+
+    const labelX = margin + 4;
+    const amountX = rightEdge - 4;
+    const addSummaryRow = (y: number, label: string, value: string) => {
+      doc.setFont('helvetica', 'normal');
+      doc.text(label, labelX, y);
+      doc.text(value, amountX, y, { align: 'right' });
+    };
+
+    addSummaryRow(94, `Description: ${invoice.description}`, '');
+    addSummaryRow(101, 'Tuition / Fee Amount', `RM ${formatCurrency(invoice.amount)}`);
+    addSummaryRow(108, 'Subsidy Zakat Applied', `- RM ${formatCurrency(invoice.subsidyAmount)}`);
+    addSummaryRow(115, 'Penalty', invoice.penaltyAmount > 0 ? `RM ${formatCurrency(invoice.penaltyAmount)}` : '-');
+    addSummaryRow(122, 'Paid So Far', `RM ${formatCurrency(invoice.paidAmount)}`);
+
+    doc.setDrawColor(210, 210, 210);
+    doc.line(labelX, 125, amountX, 125);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Outstanding to Pay', labelX, 131);
+    doc.text(`RM ${formatCurrency(outstandingAmount)}`, amountX, 131, { align: 'right' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(
+      'This is a computer-generated invoice from EduCentre. For billing enquiries, contact your centre administration.',
+      margin,
+      142
+    );
+    doc.text(`Generated on ${format(new Date(), 'dd MMM yyyy, HH:mm')}`, margin, 148);
+
+    doc.save(`${invoice.invoiceNumber}.pdf`);
   };
 
   const viewReceipt = (invoice: Invoice) => {
@@ -274,25 +569,78 @@ export default function ParentPortalPage() {
     return 0;
   };
 
-  const processPayment = () => {
-    setPaymentSuccess(true);
+  const processPayment = async () => {
+    if (!selectedInvoice) return;
 
-    // Generate receipt
+    const amountToPay = getPaymentAmount();
+    if (!Number.isFinite(amountToPay) || amountToPay <= 0) {
+      setPaymentError('Please enter a valid payment amount.');
+      return;
+    }
+
+    const receiptNumber = `RCP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`;
+    const paymentDate = new Date();
     const receipt: PaymentReceipt = {
-      receiptNumber: `RCP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`,
-      paymentDate: new Date(),
-      invoiceNumber: selectedInvoice?.invoiceNumber || '',
-      amount: getPaymentAmount(),
-      paymentMethod: paymentMethod,
-      reference: `REF${new Date().getTime()}`,
+      receiptNumber,
+      paymentDate,
+      invoiceNumber: selectedInvoice.invoiceNumber,
+      amount: amountToPay,
+      paymentMethod,
+      reference: `REF${paymentDate.getTime()}`,
     };
 
-    setTimeout(() => {
-      setPaymentDialog(false);
+    setPaymentError(null);
+    setPaymentSubmitting(true);
+
+    try {
+      const response = await fetch('/api/poc/parent/pay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoiceNumber: selectedInvoice.invoiceNumber,
+          totalPayment: amountToPay,
+          receiptNo: receiptNumber,
+        }),
+      });
+
+      const payload = await response.json() as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error ?? 'Payment update failed.');
+      }
+
+      await refreshInvoiceAmounts();
+      setPaymentSuccess(true);
+
+      const historyEntry: PaymentHistoryEntry = {
+        id: `internal-${receiptNumber}`,
+        receiptNumber,
+        invoiceNumber: selectedInvoice.invoiceNumber,
+        date: paymentDate.toISOString(),
+        amount: amountToPay,
+        method: paymentMethod,
+        reference: receipt.reference,
+      };
+      setInternalPaymentHistory((prev) => {
+        const next = [historyEntry, ...prev];
+        window.localStorage.setItem(paymentHistoryStorageKey, JSON.stringify(next));
+        return next;
+      });
+
+      setTimeout(() => {
+        setPaymentDialog(false);
+        setPaymentSuccess(false);
+        setCurrentReceipt(receipt);
+        setReceiptDialog(true);
+      }, 1200);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Payment update failed.';
+      setPaymentError(message);
       setPaymentSuccess(false);
-      setCurrentReceipt(receipt);
-      setReceiptDialog(true);
-    }, 2000);
+    } finally {
+      setPaymentSubmitting(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -310,15 +658,40 @@ export default function ParentPortalPage() {
     }
   };
 
-  const paidInvoices = invoices.filter(inv => inv.status === 'paid');
-  const payments = paidInvoices.map((inv, idx) => ({
+  const paidInvoices = visibleInvoices.filter(inv => inv.status === 'paid');
+  const paymentsFromInvoices = paidInvoices.map((inv, idx) => ({
     id: `pay-${idx}`,
+    receiptNumber: `RCP-${inv.invoiceNumber.replace('INV-', '')}`,
     invoiceNumber: inv.invoiceNumber,
     date: new Date(inv.issueDate.getTime() + 10 * 24 * 60 * 60 * 1000),
     amount: inv.paidAmount,
     method: idx % 3 === 0 ? 'FPX' : idx % 3 === 1 ? 'JomPAY' : 'Online Banking',
     reference: `REF${inv.invoiceNumber.replace('INV-', '')}${Math.floor(Math.random() * 1000)}`,
   }));
+  const payments = [...internalPaymentHistory.map((item) => ({
+    ...item,
+    date: new Date(item.date),
+  })), ...paymentsFromInvoices]
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const openReceiptFromPayment = (payment: {
+    receiptNumber?: string;
+    invoiceNumber: string;
+    date: Date;
+    amount: number;
+    method: string;
+    reference: string;
+  }) => {
+    setCurrentReceipt({
+      receiptNumber: payment.receiptNumber || `RCP-${payment.invoiceNumber.replace('INV-', '')}`,
+      paymentDate: payment.date,
+      invoiceNumber: payment.invoiceNumber,
+      amount: payment.amount,
+      paymentMethod: payment.method,
+      reference: payment.reference,
+    });
+    setReceiptDialog(true);
+  };
 
   const notifications = [
     {
@@ -571,7 +944,7 @@ export default function ParentPortalPage() {
                     <p className="font-semibold">RM {formatCurrency(student.monthlyFee)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Subsidy</p>
+                    <p className="text-gray-600">Subsidy Zakat</p>
                     <p className="font-semibold">{student.subsidyCategory}</p>
                   </div>
                   <div>
@@ -601,7 +974,7 @@ export default function ParentPortalPage() {
           <CardContent>
             <div className="text-2xl font-bold">RM {formatCurrency(totalOutstanding)}</div>
             <p className="text-xs text-muted-foreground">
-              {invoices.filter(inv => inv.status !== 'paid').length} unpaid invoice(s)
+              {visibleInvoices.filter(inv => inv.status !== 'paid').length} unpaid invoice(s)
             </p>
           </CardContent>
         </Card>
@@ -629,6 +1002,12 @@ export default function ParentPortalPage() {
             <p className="text-xs text-muted-foreground">April payment due</p>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="flex justify-end">
+        <Badge variant="outline" className={amountSource === 'external' ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700'}>
+          Invoice Amount Source: {amountSource === 'external' ? 'External DB' : 'Local Fallback'}
+        </Badge>
       </div>
 
       <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
@@ -724,16 +1103,22 @@ export default function ParentPortalPage() {
                 </div>
               </div>
 
+              {paymentError && (
+                <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {paymentError}
+                </div>
+              )}
+
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" onClick={() => setPaymentDialog(false)} className="flex-1">
+                <Button variant="outline" onClick={() => setPaymentDialog(false)} className="flex-1" disabled={paymentSubmitting}>
                   Cancel
                 </Button>
                 <Button
                   onClick={processPayment}
                   className="flex-1"
-                  disabled={paymentType === 'custom' && (!customAmount || parseFloat(customAmount) <= 0)}
+                  disabled={paymentSubmitting || (paymentType === 'custom' && (!customAmount || parseFloat(customAmount) <= 0))}
                 >
-                  Pay Now
+                  {paymentSubmitting ? 'Processing...' : 'Pay Now'}
                 </Button>
               </div>
             </div>
@@ -749,6 +1134,122 @@ export default function ParentPortalPage() {
                 <p className="text-sm text-gray-600 mt-1">
                   Your payment of RM {formatCurrency(getPaymentAmount())} has been processed.
                 </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={invoiceDialog} onOpenChange={setInvoiceDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Invoice Details</DialogTitle>
+            <DialogDescription>
+              Review invoice content before making payment
+            </DialogDescription>
+          </DialogHeader>
+
+          {invoicePreview && (
+            <div className="space-y-5">
+              <div className="rounded-lg border p-4 bg-blue-50">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-600">Invoice Number</p>
+                    <p className="font-semibold font-mono">{invoicePreview.invoiceNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Status</p>
+                    <Badge className={getStatusColor(invoicePreview.status)}>
+                      {invoicePreview.status.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Issue Date</p>
+                    <p className="font-semibold">{format(invoicePreview.issueDate, 'dd MMM yyyy')}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Due Date</p>
+                    <p className="font-semibold">{format(invoicePreview.dueDate, 'dd MMM yyyy')}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border overflow-hidden">
+                <div className="bg-gray-50 border-b px-4 py-2">
+                  <p className="font-semibold text-sm">Charges Breakdown</p>
+                </div>
+                <div className="p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Description</span>
+                    <span className="font-semibold">{invoicePreview.description}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Tuition / Fee Amount</span>
+                    <span className="font-semibold">RM {formatCurrency(invoicePreview.amount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Subsidy Zakat Applied</span>
+                    <span className="font-semibold text-green-700">- RM {formatCurrency(invoicePreview.subsidyAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Penalty</span>
+                    <span className="font-semibold">{invoicePreview.penaltyAmount > 0 ? `RM ${formatCurrency(invoicePreview.penaltyAmount)}` : '-'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Paid So Far</span>
+                    <span className="font-semibold text-blue-700">RM {formatCurrency(invoicePreview.paidAmount)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="font-medium">Outstanding to Pay</span>
+                    <span className="text-xl font-bold">RM {formatCurrency(invoicePreview.netAmount - invoicePreview.paidAmount)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border p-4 bg-gray-50">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-600">Student</p>
+                    <p className="font-semibold">{student.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Student Code</p>
+                    <p className="font-semibold font-mono">{student.studentCode}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Centre</p>
+                    <p className="font-semibold">{student.centre.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Guardian</p>
+                    <p className="font-semibold">{student.guardian.name}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 gap-2"
+                  onClick={() => void downloadInvoicePdf(invoicePreview)}
+                >
+                  <Download className="h-4 w-4" />
+                  Download Invoice PDF
+                </Button>
+                {invoicePreview.status !== 'paid' && (
+                  <Button
+                    className="flex-1"
+                    onClick={() => {
+                      setInvoiceDialog(false);
+                      openPayment(invoicePreview);
+                    }}
+                  >
+                    Pay This Invoice
+                  </Button>
+                )}
+                <Button variant="outline" className="flex-1" onClick={() => setInvoiceDialog(false)}>
+                  Close
+                </Button>
               </div>
             </div>
           )}
@@ -941,7 +1442,7 @@ export default function ParentPortalPage() {
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payment History</TabsTrigger>
           <TabsTrigger value="statement">Statement of Account</TabsTrigger>
-          <TabsTrigger value="subsidy">Subsidy</TabsTrigger>
+          <TabsTrigger value="subsidy">Subsidy Zakat</TabsTrigger>
           <TabsTrigger value="results">Results</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -969,7 +1470,7 @@ export default function ParentPortalPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoices.map((invoice) => {
+                  {visibleInvoices.map((invoice) => {
                     const outstanding = invoice.netAmount - invoice.paidAmount;
                     return (
                       <TableRow key={invoice.id}>
@@ -992,16 +1493,20 @@ export default function ParentPortalPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {invoice.status !== 'paid' && (
-                            <Button size="sm" onClick={() => openPayment(invoice)}>
-                              Pay Now
+                          <div className="flex items-center gap-2">
+                            <Button size="sm" variant="outline" onClick={() => openInvoicePreview(invoice)}>
+                              View Invoice
                             </Button>
-                          )}
-                          {invoice.status === 'paid' && (
-                            <Button size="sm" variant="ghost" onClick={() => viewReceipt(invoice)}>
-                              View Receipt
-                            </Button>
-                          )}
+                            {invoice.status !== 'paid' ? (
+                              <Button size="sm" onClick={() => openPayment(invoice)}>
+                                Pay Now
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="ghost" onClick={() => viewReceipt(invoice)}>
+                                View Receipt
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -1028,6 +1533,7 @@ export default function ParentPortalPage() {
                     <TableHead>Reference No.</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1040,6 +1546,11 @@ export default function ParentPortalPage() {
                       <TableCell className="text-right font-semibold">RM {formatCurrency(payment.amount)}</TableCell>
                       <TableCell>
                         <Badge className="bg-green-500">COMPLETED</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline" onClick={() => openReceiptFromPayment(payment)}>
+                          View Receipt
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1068,18 +1579,18 @@ export default function ParentPortalPage() {
                 <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="text-sm text-gray-600">Total Billed</p>
-                    <p className="text-xl font-bold">RM {formatCurrency(invoices.reduce((sum, inv) => sum + inv.netAmount, 0))}</p>
+                    <p className="text-xl font-bold">RM {formatCurrency(visibleInvoices.reduce((sum, inv) => sum + inv.netAmount, 0))}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Total Subsidy</p>
+                    <p className="text-sm text-gray-600">Total Subsidy Zakat</p>
                     <p className="text-xl font-bold">
-                      RM {formatCurrency(invoices.reduce((sum, inv) => sum + inv.subsidyAmount, 0))}
+                      RM {formatCurrency(visibleInvoices.reduce((sum, inv) => sum + inv.subsidyAmount, 0))}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Total Paid</p>
                     <p className="text-xl font-bold">
-                      RM {formatCurrency(invoices.reduce((sum, inv) => sum + inv.paidAmount, 0))}
+                      RM {formatCurrency(visibleInvoices.reduce((sum, inv) => sum + inv.paidAmount, 0))}
                     </p>
                   </div>
                   <div>
@@ -1099,7 +1610,7 @@ export default function ParentPortalPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invoices.map((invoice, idx) => {
+                    {visibleInvoices.map((invoice, idx) => {
                       const isPaid = invoice.status === 'paid';
                       return (
                         <>
@@ -1109,7 +1620,7 @@ export default function ParentPortalPage() {
                             <TableCell className="text-right">RM {formatCurrency(invoice.netAmount)}</TableCell>
                             <TableCell className="text-right">-</TableCell>
                             <TableCell className="text-right font-semibold">
-                              RM {formatCurrency(invoices.slice(0, idx + 1).reduce((sum, inv) => sum + inv.netAmount - inv.paidAmount, 0))}
+                              RM {formatCurrency(visibleInvoices.slice(0, idx + 1).reduce((sum, inv) => sum + inv.netAmount - inv.paidAmount, 0))}
                             </TableCell>
                           </TableRow>
                           {isPaid && (
@@ -1119,7 +1630,7 @@ export default function ParentPortalPage() {
                               <TableCell className="text-right">-</TableCell>
                               <TableCell className="text-right">RM {formatCurrency(invoice.paidAmount)}</TableCell>
                               <TableCell className="text-right font-semibold">
-                                RM {formatCurrency(invoices.slice(0, idx + 1).reduce((sum, inv) => sum + inv.netAmount - inv.paidAmount, 0))}
+                                RM {formatCurrency(visibleInvoices.slice(0, idx + 1).reduce((sum, inv) => sum + inv.netAmount - inv.paidAmount, 0))}
                               </TableCell>
                             </TableRow>
                           )}
@@ -1159,9 +1670,9 @@ export default function ParentPortalPage() {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <Shield className="h-5 w-5 text-green-600" />
-                          Subsidy Entitlement
+                          Subsidy Zakat Entitlement
                         </CardTitle>
-                        <CardDescription>Your child&apos;s subsidy allocation details</CardDescription>
+                        <CardDescription>Your child&apos;s subsidy zakat allocation details</CardDescription>
                       </div>
                       <Badge className="bg-green-600 text-white text-sm px-3 py-1">{student.subsidyCategory}</Badge>
                     </div>
@@ -1169,12 +1680,12 @@ export default function ParentPortalPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
-                        <p className="text-xs text-gray-500">Subsidy Rate</p>
+                        <p className="text-xs text-gray-500">Subsidy Zakat Rate</p>
                         <p className="text-2xl font-bold text-green-700">{subsidyPercentage}%</p>
                         <p className="text-xs text-gray-500">of monthly fee</p>
                       </div>
                       <div className="p-4 bg-white rounded-lg border border-green-200 text-center">
-                        <p className="text-xs text-gray-500">Monthly Subsidy</p>
+                        <p className="text-xs text-gray-500">Monthly Subsidy Zakat</p>
                         <p className="text-2xl font-bold text-green-700">RM {formatCurrency(monthlySubsidy)}</p>
                         <p className="text-xs text-gray-500">max RM {formatCurrency(maxMonthlySubsidy)}/mo</p>
                       </div>
@@ -1241,10 +1752,10 @@ export default function ParentPortalPage() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        Subsidy Details
-                      </CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          Subsidy Zakat Details
+                        </CardTitle>
                       <CardDescription>Eligibility and validity information</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -1285,9 +1796,9 @@ export default function ParentPortalPage() {
                       <div>
                         <CardTitle className="flex items-center gap-2 text-base">
                           <HandCoins className="h-4 w-4 text-green-600" />
-                          Monthly Subsidy Breakdown
+                          Monthly Subsidy Zakat Breakdown
                         </CardTitle>
-                        <CardDescription>How subsidy is applied to each invoice</CardDescription>
+                        <CardDescription>How subsidy zakat is applied to each invoice</CardDescription>
                       </div>
                       <Button variant="outline" size="sm" className="gap-2">
                         <Download className="h-3 w-3" />
@@ -1302,7 +1813,7 @@ export default function ParentPortalPage() {
                           <TableHead>Month</TableHead>
                           <TableHead>Invoice</TableHead>
                           <TableHead className="text-right">Full Fee</TableHead>
-                          <TableHead className="text-right">Subsidy ({subsidyPercentage}%)</TableHead>
+                          <TableHead className="text-right">Subsidy Zakat ({subsidyPercentage}%)</TableHead>
                           <TableHead className="text-right">You Pay</TableHead>
                           <TableHead>Fund</TableHead>
                           <TableHead>Status</TableHead>
@@ -1351,7 +1862,7 @@ export default function ParentPortalPage() {
                           <p className="text-lg font-bold">RM {formatCurrency(allInvoices.reduce((s, inv) => s + inv.amount, 0))}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Total Subsidy</p>
+                          <p className="text-xs text-gray-500">Total Subsidy Zakat</p>
                           <p className="text-lg font-bold text-green-700">– RM {formatCurrency(totalSubsidyUsed)}</p>
                         </div>
                         <div>
@@ -1368,7 +1879,7 @@ export default function ParentPortalPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-sm">
                       <Info className="h-4 w-4 text-blue-600" />
-                      How Subsidy Works
+                      How Subsidy Zakat Works
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

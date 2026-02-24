@@ -186,6 +186,36 @@ educentre-mock/
 - `npm start` - Start production server
 - `npm run lint` - Run ESLint
 
+## External Invoice DB Connector
+
+Invoice amount sourcing now supports two modes:
+
+1. `api` mode (existing behavior)
+2. `mysql_ssh` mode (direct MySQL over SSH tunnel)
+
+Configuration is environment-driven via `.env.local` (see `.env.example`).
+
+### Quick setup for MySQL-over-SSH
+
+1. Set `EXTERNAL_INVOICE_MODE=mysql_ssh`
+2. Fill SSH and MySQL env vars (`EXTERNAL_DB_*`)
+3. Restart the app
+
+Important:
+- SSH key must be OpenSSH private key format for system `ssh`.
+- PuTTY `.ppk` keys are not directly supported; convert to OpenSSH first.
+
+### Using your own SQL query
+
+If your invoice data lives in existing tables/views, you can provide a custom SQL:
+
+1. Set `EXTERNAL_DB_CUSTOM_QUERY` in `.env.local`
+2. Optionally use `$CUSTOMER_ID` placeholder and set `EXTERNAL_DB_CUSTOMER_ID`
+3. Keep aliases compatible with the adapter mapping:
+   - `InvoiceNo` or `invoiceNumber`
+   - `Amt` or `amount`
+   - optional `Balance`/`netAmount`, `InvoiceDate`/`updatedAt`
+
 ### Adding New Components
 
 This project uses shadcn/ui. To add new components:

@@ -61,7 +61,7 @@ export default function MobileInvoicesPage() {
 
               <h3 className="text-[12px] uppercase tracking-widest font-extrabold text-slate-400 mb-2">Summary</h3>
               <div className="flex justify-between items-baseline"><span className="text-[14px] text-slate-500 font-medium">Gross Amount</span><span className="text-[14px] font-bold">RM {inv.amount.toFixed(2)}</span></div>
-              <div className="flex justify-between items-baseline"><span className="text-[14px] text-slate-500 font-medium">Subsidy</span><span className="text-[14px] font-bold text-green-600">-RM {inv.subsidyAmount.toFixed(2)}</span></div>
+              <div className="flex justify-between items-baseline"><span className="text-[14px] text-slate-500 font-medium">Subsidy Zakat</span><span className="text-[14px] font-bold text-green-600">-RM {inv.subsidyAmount.toFixed(2)}</span></div>
 
               <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm mt-3">
                 <div className="flex items-center justify-between mb-2">

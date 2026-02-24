@@ -1,0 +1,58 @@
+[
+  {
+    "id": "doc-1771951716967-hcdy9l",
+    "applicationId": "app-1771951716965-lhjxil",
+    "applicationRef": "APP-2026-00001",
+    "docType": "birth_cert",
+    "originalName": "birth.txt",
+    "storedName": "doc-1771951716967-hcdy9l-birth.txt",
+    "relativePath": "edms/files/app-1771951716965-lhjxil/doc-1771951716967-hcdy9l-birth.txt",
+    "mimeType": "text/plain",
+    "size": 17,
+    "status": "uploaded",
+    "uploadedAt": "2026-02-24T16:48:36.965Z",
+    "uploadedBy": "POC Guardian"
+  },
+  {
+    "id": "doc-1771951716969-8bvb9n",
+    "applicationId": "app-1771951716965-lhjxil",
+    "applicationRef": "APP-2026-00001",
+    "docType": "student_ic",
+    "originalName": "student.txt",
+    "storedName": "doc-1771951716969-8bvb9n-student.txt",
+    "relativePath": "edms/files/app-1771951716965-lhjxil/doc-1771951716969-8bvb9n-student.txt",
+    "mimeType": "text/plain",
+    "size": 17,
+    "status": "uploaded",
+    "uploadedAt": "2026-02-24T16:48:36.965Z",
+    "uploadedBy": "POC Guardian"
+  },
+  {
+    "id": "doc-1771951716971-85wcqo",
+    "applicationId": "app-1771951716965-lhjxil",
+    "applicationRef": "APP-2026-00001",
+    "docType": "guardian_ic",
+    "originalName": "guardian.txt",
+    "storedName": "doc-1771951716971-85wcqo-guardian.txt",
+    "relativePath": "edms/files/app-1771951716965-lhjxil/doc-1771951716971-85wcqo-guardian.txt",
+    "mimeType": "text/plain",
+    "size": 18,
+    "status": "uploaded",
+    "uploadedAt": "2026-02-24T16:48:36.965Z",
+    "uploadedBy": "POC Guardian"
+  },
+  {
+    "id": "doc-1771951716972-rm3cdo",
+    "applicationId": "app-1771951716965-lhjxil",
+    "applicationRef": "APP-2026-00001",
+    "docType": "address_proof",
+    "originalName": "address.txt",
+    "storedName": "doc-1771951716972-rm3cdo-address.txt",
+    "relativePath": "edms/files/app-1771951716965-lhjxil/doc-1771951716972-rm3cdo-address.txt",
+    "mimeType": "text/plain",
+    "size": 20,
+    "status": "uploaded",
+    "uploadedAt": "2026-02-24T16:48:36.965Z",
+    "uploadedBy": "POC Guardian"
+  }
+]
